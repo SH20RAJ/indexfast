@@ -1,7 +1,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import SitesManager from '@/components/sites-manager'
+import SubmissionsList from '@/components/submissions-list'
 
 export default async function DashboardPage() {
   const supabase = createClient()
@@ -26,10 +26,14 @@ export default async function DashboardPage() {
         </div>
       </div>
       
-      <secion>
-        <h2 className="text-xl font-semibold mb-4">Your Sites</h2>
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold">Your Sites</h2>
         <SitesManager />
-      </secion>
+      </section>
+
+      <section className="space-y-4">
+        <SubmissionsList />
+      </section>
     </div>
   )
 }
