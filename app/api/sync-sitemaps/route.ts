@@ -29,24 +29,40 @@ export async function POST(request: Request) {
     const parser = new XMLParser()
     let totalUrls = 0
 
-    // 2. For each sitemap, fetch the XML and parse
-    for (const sitemap of sitemapsData.sitemap) {
-       // Only process indexable sitemaps
-       const xmlRes = await fetch(sitemap.path)
-       const xmlText = await xmlRes.text()
-       const xmlObj = parser.parse(xmlText)
 
-       // Handle sitemap index vs urlset
-       let urls: string[] = []
-       if (xmlObj.urlset && xmlObj.urlset.url) {
-          const urlList = Array.isArray(xmlObj.urlset.url) ? xmlObj.urlset.url : [xmlObj.urlset.url]
-          urls = urlList.map((u: any) => u.loc)
+    let totalUrls = 0
+    let allUrls: string[] = []
+
+    // 2. For each sitemap, fetch the XML and parse
+    for (const sitemap of sitemapsData.sitemap || []) { // Ensure array
+       try {
+         const xmlRes = await fetch(sitemap.path)
+         if (!xmlRes.ok) continue
+         const xmlText = await xmlRes.text()
+         const xmlObj = parser.parse(xmlText)
+
+         // Handle sitemap index vs urlset
+         if (xmlObj.urlset && xmlObj.urlset.url) {
+            const urlList = Array.isArray(xmlObj.urlset.url) 
+              ? xmlObj.urlset.url 
+              : [xmlObj.urlset.url]
+            
+            const locs = urlList.map((u: any) => u.loc).filter(Boolean)
+            allUrls.push(...locs)
+         } else if (xmlObj.sitemapindex && xmlObj.sitemapindex.sitemap) {
+            // Nested sitemaps - recursive fetch needed? 
+            // For MVP, maybe skip deep nesting or handle 1 level
+            // Just logging for now
+            console.log('Found nested sitemap index', sitemap.path)
+         }
+       } catch (err) {
+         console.error('Error parsing sitemap', sitemap.path, err)
        }
-       
-       // TODO: Save to DB (batch insert)
-       // For MVP, just counting
-       totalUrls += urls.length
     }
+    
+    totalUrls = allUrls.length
+    // TODO: Insert into DB
+
 
     return NextResponse.json({ success: true, processed: totalUrls })
 
