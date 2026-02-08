@@ -2,6 +2,13 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, CheckCircle2, Zap, BarChart3 } from 'lucide-react'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'IndexFast - Get Indexed in Minutes',
+  description: 'The ultimate tool for SEO professionals and content creators to instantly index new pages on Google and Bing.',
+}
+
 
 export default function LandingPage() {
   return (

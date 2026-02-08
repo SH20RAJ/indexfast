@@ -4,7 +4,12 @@ import { redirect } from 'next/navigation'
 
 import SitesManager from '@/components/sites-manager'
 import SubmissionsList from '@/components/submissions-list'
+import { Metadata } from 'next'
 
+export const metadata: Metadata = {
+  title: 'Dashboard',
+  description: 'Manage your Google Search Console properties and track indexing status.',
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient()

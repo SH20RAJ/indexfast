@@ -1,9 +1,8 @@
-
 'use client'
 
 import { createClient } from '@/utils/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Chrome } from 'lucide-react'
+import { Loader2, Chrome } from 'lucide-react'
 
 export default function LoginPage() {
   const handleLogin = async () => {

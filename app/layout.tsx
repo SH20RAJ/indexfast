@@ -8,8 +8,25 @@ import { Toaster } from "@/components/ui/sonner"
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
 export const metadata: Metadata = {
-  title: 'IndexFast - Automate Indexing',
-  description: 'Submit your URLs to Google, Bing, and Yandex automatically.',
+  metadataBase: new URL('https://indexfast.com'),
+  title: {
+    default: 'IndexFast - Automate Google Indexing',
+    template: '%s | IndexFast',
+  },
+  description: 'Automatically submit your new content to Google, Bing, and Yandex. The fastest way to get indexed.',
+  openGraph: {
+    title: 'IndexFast - Automate Google Indexing',
+    description: 'Stop waiting for Google to crawl your site. Push URLs directly to the index.',
+    url: 'https://indexfast.com',
+    siteName: 'IndexFast',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'IndexFast - Automate Google Indexing',
+    description: 'Stop waiting for Google to crawl your site. Push URLs directly to the index.',
+  },
 }
 
 export default function RootLayout({
