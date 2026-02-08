@@ -13,7 +13,7 @@
   },
   "r2_buckets": [
     {
-      "binding": "NEXT_CACHE_WORKERS_KV",
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
       "bucket_name": "placer-cache"
     }
   ]
