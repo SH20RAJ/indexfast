@@ -1,5 +1,4 @@
-import { CreativeCard } from '@/components/ui/creative-card'
-import { ArrowRight } from 'lucide-react'
+
 
 export function HowItWorks() {
   return (
