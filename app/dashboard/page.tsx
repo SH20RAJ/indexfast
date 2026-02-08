@@ -5,10 +5,16 @@ import { redirect } from 'next/navigation'
 import SitesManager from '@/components/sites-manager'
 import SubmissionsList from '@/components/submissions-list'
 import { Metadata } from 'next'
+import baseMetadata from '@/lib/metadata'
 
 export const metadata: Metadata = {
+  ...baseMetadata,
   title: 'Dashboard',
   description: 'Manage your Google Search Console properties and track indexing status.',
+  robots: {
+    index: false,
+    follow: false,
+  }
 }
 
 export default async function DashboardPage() {
