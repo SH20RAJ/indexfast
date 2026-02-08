@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react'
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="w-full py-12 md:py-24 lg:py-32 bg-amber-50 dark:bg-zinc-900">
+    <section id="how-it-works" className="w-full py-12 md:py-24 lg:py-32 bg-amber-50 dark:bg-zinc-900 transition-colors duration-300">
       <div className="container px-4 md:px-6">
         <div className="text-center mb-16">
           <h2 className="font-handwritten text-4xl md:text-5xl font-bold mb-4 text-zinc-900 dark:text-zinc-50">How it Works</h2>

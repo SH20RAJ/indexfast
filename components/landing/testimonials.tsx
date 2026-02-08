@@ -3,7 +3,7 @@ import { Star } from 'lucide-react'
 
 export function Testimonials() {
   return (
-    <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32 bg-white dark:bg-zinc-950">
+    <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32 bg-white dark:bg-zinc-950 transition-colors duration-300">
       <div className="container px-4 md:px-6">
         <div className="text-center mb-16">
           <h2 className="font-handwritten text-4xl md:text-5xl font-bold mb-4 text-zinc-900 dark:text-zinc-50">Loved by Makers</h2>
