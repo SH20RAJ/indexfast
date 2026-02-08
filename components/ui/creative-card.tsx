@@ -24,7 +24,7 @@ export function CreativeCard({ className, rotate = 'none', children, ...props }:
                     "transition-all duration-300",
                 )}
             />
-            <div className="relative p-6 border-2 border-transparent">
+            <div className="relative p-6 border-2 border-transparent dark:text-zinc-100">
                 {children}
             </div>
         </div>
