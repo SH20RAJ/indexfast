@@ -1,11 +1,16 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Patrick_Hand } from 'next/font/google'
 import './globals.css'
 import { cn } from '@/lib/utils'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from "@/components/ui/sonner"
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
+const patrickHand = Patrick_Hand({ 
+  weight: '400', 
+  subsets: ['latin'], 
+  variable: '--font-handwritten' 
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://indexfast.com'),
@@ -38,7 +43,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={cn(
           "min-h-screen bg-background font-sans antialiased",
-          inter.variable
+          inter.variable,
+          patrickHand.variable
         )}>
         <ThemeProvider
             attribute="class"
