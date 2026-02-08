@@ -1,7 +1,10 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
+
+import SitesManager from '@/components/sites-manager'
 import SubmissionsList from '@/components/submissions-list'
+
 
 export default async function DashboardPage() {
   const supabase = createClient()
