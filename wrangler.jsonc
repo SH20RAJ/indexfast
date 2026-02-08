@@ -10,5 +10,11 @@
   },
   "observability": {
     "enabled": true
-  }
+  },
+  "r2_buckets": [
+    {
+      "binding": "NEXT_CACHE_WORKERS_KV",
+      "bucket_name": "placer-cache"
+    }
+  ]
 }
