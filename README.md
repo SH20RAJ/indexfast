@@ -27,7 +27,7 @@ IndexFast is a powerful Micro SaaS that automates content indexing for Google, B
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/Startups-Pvt-Ltd/indexfast.git
+   git clone https://github.com/sh20raj/indexfast.git
    cd indexfast
    ```
 
