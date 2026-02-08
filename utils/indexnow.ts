@@ -25,6 +25,6 @@ export async function submitToIndexNow(host: string, key: string, keyLocation: s
     };
   } catch (error) {
     console.error('IndexNow Submission Error:', error);
-    return { success: false, error };
+    return { success: false, message: (error as Error).message || 'Unknown error' };
   }
 }

@@ -5,8 +5,8 @@ import { XMLParser } from 'fast-xml-parser'
 import { submitToIndexNow } from '@/utils/indexnow'
 
 export async function POST(request: Request) {
-  const { siteUrl } = await request.json()
-  const supabase = createClient()
+  const { siteUrl } = await request.json() as { siteUrl: string }
+  const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session?.provider_token) {
@@ -40,14 +40,14 @@ export async function POST(request: Request) {
         headers: { Authorization: `Bearer ${session.provider_token}` }
       }
     )
-    const sitemapsData = await sitemapsResponse.json()
+    const sitemapsData = await sitemapsResponse.json() as any
 
     if (!sitemapsData.sitemap) {
         return NextResponse.json({ message: 'No sitemaps found' })
     }
 
     const parser = new XMLParser()
-    let allUrls: string[] = []
+    const allUrls: string[] = []
 
     // 3. Parse Sitemaps
     for (const sitemap of sitemapsData.sitemap || []) {

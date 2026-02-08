@@ -11,13 +11,7 @@ import {
   CardDescription,
   CardFooter,
 } from "@/components/ui/card";
-import {
-  Loader2,
-  Plus,
-  Check,
-  RefreshCw,
-  SquareArrowOutUpRight,
-} from "lucide-react";
+import { Loader2, Plus, Check, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface Site {
@@ -54,7 +48,7 @@ export default function SitesManager() {
             headers: { Authorization: `Bearer ${session.provider_token}` },
           },
         );
-        const gscData = await gscRes.json();
+        const gscData = await gscRes.json() as any;
         if (gscData.siteEntry) {
           setGscSites(gscData.siteEntry);
         }
@@ -109,7 +103,7 @@ export default function SitesManager() {
         method: "POST",
         body: JSON.stringify({ siteUrl }),
       });
-      const result = await res.json();
+      const result = await res.json() as any;
       if (result.success) {
         alert(
           `Synced! Processed: ${result.processed}, Submitted: ${result.submitted}`,
