@@ -2,16 +2,16 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 interface CreativeButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'accent' | 'outline'
+    variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
     size?: 'default' | 'sm' | 'lg' | 'icon'
 }
 
 export function CreativeButton({ className, variant = 'primary', size = 'default', ...props }: CreativeButtonProps) {
     const variants = {
-        primary: "bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 shadow-blue-900 dark:shadow-blue-300",
-        secondary: "bg-zinc-900 text-white hover:bg-zinc-800 active:bg-zinc-900 shadow-zinc-500 dark:shadow-zinc-700",
-        accent: "bg-amber-400 text-zinc-900 hover:bg-amber-300 active:bg-amber-400 shadow-amber-700 dark:shadow-amber-200",
-        outline: "bg-white text-zinc-900 border-2 border-zinc-900 hover:bg-zinc-50 shadow-zinc-900 dark:shadow-white dark:bg-zinc-900 dark:text-white dark:border-white"
+        primary: "bg-brand text-brand-foreground hover:bg-brand/90 shadow-lg shadow-brand/20",
+        secondary: "bg-white text-neutral-900 border border-neutral-200 hover:bg-neutral-50 shadow-sm",
+        outline: "border-2 border-brand text-brand hover:bg-brand/10",
+        ghost: "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900",
     }
 
     // Border color logic: outline uses border-zinc-900/white, others rely on background but we want a border for the "drawing" look

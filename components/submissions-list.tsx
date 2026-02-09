@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { CreativeCard } from '@/components/ui/creative-card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
 
 interface Submission {
   id: string
@@ -19,15 +18,18 @@ export default function SubmissionsList({ initialSubmissions }: { initialSubmiss
   const [submissions] = useState<Submission[]>(initialSubmissions || [])
 
   return (
-    <Card className="col-span-1 md:col-span-2 lg:col-span-3">
-      <CardHeader>
-        <CardTitle>Recent Submissions</CardTitle>
-        <CardDescription>URLs submitted to IndexNow recently.</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <CreativeCard className="col-span-1 md:col-span-2 lg:col-span-3">
+        <div className="mb-6">
+            <h2 className="font-handwritten text-2xl font-bold">Recent Submissions</h2>
+            <p className="text-muted-foreground">URLs submitted to IndexNow recently.</p>
+        </div>
+      
         {submissions.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No submissions yet. Sync a site to get started.</p>
+            <div className="p-8 text-center border-2 border-dashed rounded-lg border-muted">
+                <p className="text-muted-foreground text-sm font-handwritten text-xl">No submissions yet. Sync a site to get started.</p>
+            </div>
         ) : (
+            <div className="rounded-md border">
             <Table>
             <TableHeader>
                 <TableRow>
@@ -44,9 +46,13 @@ export default function SubmissionsList({ initialSubmissions }: { initialSubmiss
                         <div className="text-[10px] text-muted-foreground">{item.sites?.domain}</div>
                     </TableCell>
                     <TableCell>
-                        <Badge variant={item.status === 200 ? 'default' : 'destructive'} className={item.status === 200 ? 'bg-green-600 hover:bg-green-700' : ''}>
+                        <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold border ${
+                            item.status === 200 
+                            ? 'bg-green-500/10 text-green-600 border-green-500/20' 
+                            : 'bg-red-500/10 text-red-600 border-red-500/20'
+                        }`}>
                             {item.status}
-                        </Badge>
+                        </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
                         {new Date(item.submitted_at).toLocaleString()}
@@ -55,8 +61,8 @@ export default function SubmissionsList({ initialSubmissions }: { initialSubmiss
                 ))}
             </TableBody>
             </Table>
+            </div>
         )}
-      </CardContent>
-    </Card>
+    </CreativeCard>
   )
 }

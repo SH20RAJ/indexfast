@@ -30,8 +30,8 @@ export default async function DashboardPage() {
     <div className="flex flex-col gap-8 p-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Manage your Google Search Console properties.</p>
+          <h1 className="text-4xl font-bold tracking-tight font-handwritten mb-2">Dashboard</h1>
+          <p className="text-muted-foreground font-handwritten text-lg">Manage your Google Search Console properties.</p>
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-500">{user.primaryEmail}</span>
@@ -39,7 +39,7 @@ export default async function DashboardPage() {
       </div>
       
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Your Sites</h2>
+        <h2 className="text-2xl font-bold font-handwritten">Your Sites</h2>
         <SitesManager initialSites={sites} />
       </section>
 

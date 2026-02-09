@@ -14,8 +14,8 @@ export function LoginForm() {
       
       {/* Musical/Creative Visuals */}
       <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-[100px] animate-pulse" />
-          <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] animate-pulse delay-700" />
+          <div className="absolute top-1/4 left-10 w-72 h-72 bg-effect-1/10 rounded-full blur-[100px] animate-pulse" />
+          <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-effect-2/10 rounded-full blur-[100px] animate-pulse delay-700" />
       </div>
 
       <motion.div 

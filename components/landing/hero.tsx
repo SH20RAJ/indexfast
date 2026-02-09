@@ -17,11 +17,11 @@ export function Hero() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-8 backdrop-blur-sm"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-effect-2/10 border border-effect-2/20 text-brand text-sm font-medium mb-8 backdrop-blur-sm"
         >
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-effect-2 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
             </span>
             New: IndexNow API Integration
         </motion.div>
@@ -96,8 +96,8 @@ export function Hero() {
                                 <div className="text-green-500/60 text-sm">Successfully submitted 12 URLs</div>
                             </div>
                         </div>
-                         <div className="flex items-center gap-4 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                            <div className="h-10 w-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500">
+                         <div className="flex items-center gap-4 p-4 rounded-lg bg-effect-2/10 border border-effect-2/20">
+                            <div className="h-10 w-10 rounded-full bg-effect-2/20 flex items-center justify-center text-brand">
                                 <Zap className="w-6 h-6" />
                             </div>
                             <div>
@@ -109,7 +109,7 @@ export function Hero() {
                     
                     {/* Code Snippet Visual */}
                     <div className="relative rounded-lg bg-black p-4 font-mono text-xs md:text-sm text-neutral-400 overflow-hidden border border-neutral-800">
-                        <div className="mb-2 text-neutral-500">// Response</div>
+                        <div className="mb-2 text-neutral-500">{'// Response'}</div>
                         <div className="text-green-400">{"{"}</div>
                         <div className="pl-4">
                             <span className="text-purple-400">&quot;status&quot;</span>: <span className="text-blue-400">&quot;success&quot;</span>,
@@ -123,7 +123,7 @@ export function Hero() {
                         <div className="text-green-400">{"}"}</div>
                         
                         {/* Scanning beam */}
-                        <div className="absolute top-0 left-0 w-full h-[2px] bg-blue-500 shadow-[0_0_20px_2px_rgba(59,130,246,0.5)] animate-[accordion-down_2s_ease-in-out_infinite]"></div>
+                        <div className="absolute top-0 left-0 w-full h-[2px] bg-brand shadow-[0_0_20px_2px_rgba(59,130,246,0.5)] animate-[accordion-down_2s_ease-in-out_infinite]"></div>
                     </div>
                 </div>
             </div>
