@@ -1,6 +1,6 @@
-
-import { createClient } from '@/utils/supabase/server'
+import { stackServerApp } from "@/stack/server";
 import { redirect } from 'next/navigation'
+import { getDashboardData } from "@/app/actions/dashboard";
 
 import SitesManager from '@/components/sites-manager'
 import SubmissionsList from '@/components/submissions-list'
@@ -18,15 +18,13 @@ export const metadata: Metadata = {
 }
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await stackServerApp.getUser();
 
   if (!user) {
     return redirect('/login')
   }
+
+  const { sites, submissions } = await getDashboardData() || { sites: [], submissions: [] };
 
   return (
     <div className="flex flex-col gap-8 p-8 max-w-7xl mx-auto">
@@ -36,17 +34,17 @@ export default async function DashboardPage() {
           <p className="text-muted-foreground">Manage your Google Search Console properties.</p>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-500">{user.email}</span>
+          <span className="text-sm text-gray-500">{user.primaryEmail}</span>
         </div>
       </div>
       
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Your Sites</h2>
-        <SitesManager />
+        <SitesManager initialSites={sites} />
       </section>
 
       <section className="space-y-4">
-        <SubmissionsList />
+        <SubmissionsList initialSubmissions={submissions} />
       </section>
     </div>
   )

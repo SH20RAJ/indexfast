@@ -1,12 +1,9 @@
-
 'use client'
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/utils/supabase/client'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Loader2 } from 'lucide-react'
 
 interface Submission {
   id: string
@@ -18,29 +15,8 @@ interface Submission {
   }
 }
 
-export default function SubmissionsList() {
-  const [submissions, setSubmissions] = useState<Submission[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function fetchSubmissions() {
-        const supabase = createClient()
-        const { data } = await supabase
-            .from('submissions')
-            .select('*, sites(domain)')
-            .order('submitted_at', { ascending: false })
-            .limit(20)
-        
-        if (data) {
-            setSubmissions(data as any)
-        }
-        setLoading(false)
-    }
-
-    fetchSubmissions()
-  }, [])
-
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>
+export default function SubmissionsList({ initialSubmissions }: { initialSubmissions: any[] }) {
+  const [submissions] = useState<Submission[]>(initialSubmissions || [])
 
   return (
     <Card className="col-span-1 md:col-span-2 lg:col-span-3">
