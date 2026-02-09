@@ -1,8 +1,13 @@
+"use client";
+
 import Link from 'next/link'
 import { Zap } from 'lucide-react'
 import { CreativeButton } from '@/components/ui/creative-button'
+import { useUser } from '@stackframe/stack'
 
 export function Header() {
+  const user = useUser();
+
   return (
     <header className="px-4 lg:px-6 h-20 flex items-center border-b-2 border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 sticky top-0 z-50 transition-colors duration-300">
       <Link className="flex items-center justify-center gap-2 group" href="/">
@@ -18,11 +23,19 @@ export function Header() {
         <Link className="font-handwritten text-lg hover:underline underline-offset-4 text-zinc-900 dark:text-zinc-100" href="/pricing">
           Pricing
         </Link>
-        <Link href="/login">
-            <CreativeButton variant="secondary" className="h-10 px-4 text-base bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200 shadow-zinc-500 dark:shadow-white">
-                Sign In
-            </CreativeButton>
-        </Link>
+        {user ? (
+            <Link href="/dashboard">
+                <CreativeButton className="h-10 px-4 text-base bg-blue-600 text-white hover:bg-blue-700 shadow-blue-900">
+                    Dashboard
+                </CreativeButton>
+            </Link>
+        ) : (
+            <Link href="/login">
+                <CreativeButton variant="secondary" className="h-10 px-4 text-base bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200 shadow-zinc-500 dark:shadow-white">
+                    Sign In
+                </CreativeButton>
+            </Link>
+        )}
       </nav>
     </header>
   )
