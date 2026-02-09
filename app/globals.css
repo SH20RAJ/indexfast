@@ -40,8 +40,8 @@
     --brand: 221.2 83.2% 53.3%; /* Blue-600 */
     --brand-foreground: 210 40% 98%;
 
-    --bg-features: 240 5.9% 10%; /* Zinc-950 approx */
-    --bg-section: 240 5.9% 10%; /* Zinc-950 approx */
+    --bg-features: 48 96% 89%; /* Amber-50 approx - Light for Light mode */
+    --bg-section: 0 0% 100%; /* White for Light mode */
   }
 
   .dark {
@@ -72,15 +72,15 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
-    
+
     --effect-1: 270 95% 60%; /* Purple */
     --effect-2: 217 91% 60%; /* Blue */
 
     --brand: 221.2 83.2% 53.3%; /* Blue-600 */
     --brand-foreground: 210 40% 98%;
 
-    --bg-features: 48 96% 89%; /* Amber-50 approx */
-    --bg-section: 0 0% 100%; /* White */
+    --bg-features: 240 5.9% 10%; /* Zinc-950 approx - Dark for Dark mode */
+    --bg-section: 240 5.9% 10%; /* Zinc-950 approx - Dark for Dark mode */
   }
 }
 

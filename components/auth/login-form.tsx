@@ -1,12 +1,12 @@
 "use client";
 
-import { CredentialSignIn, CredentialSignUp } from "@stackframe/stack";
+import { SignIn, SignUp } from "@stackframe/stack";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 
-export function LoginForm() {
-  const [isLogin, setIsLogin] = useState(true);
+export function LoginForm({ initialMode = "login" }: { initialMode?: "login" | "signup" }) {
+  const [isLogin, setIsLogin] = useState(initialMode === "login");
 
   return (
     <div className="min-h-screen w-full relative flex items-center justify-center bg-neutral-950 overflow-hidden font-sans">
@@ -47,7 +47,7 @@ export function LoginForm() {
                             exit={{ opacity: 0, x: 20 }}
                             transition={{ duration: 0.3 }}
                         >
-                             <CredentialSignIn />
+                             <SignIn fullPage={false} />
                         </motion.div>
                     ) : (
                         <motion.div
@@ -57,7 +57,7 @@ export function LoginForm() {
                             exit={{ opacity: 0, x: -20 }}
                             transition={{ duration: 0.3 }}
                         >
-                            <CredentialSignUp />
+                            <SignUp fullPage={false} />
                         </motion.div>
                     )}
                 </AnimatePresence>

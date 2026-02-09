@@ -20,6 +20,9 @@ export function Header() {
         <Link className="font-handwritten text-lg hover:underline underline-offset-4 text-zinc-900 dark:text-zinc-100" href="/#features">
           Features
         </Link>
+        <Link className="font-handwritten text-lg hover:underline underline-offset-4 text-zinc-900 dark:text-zinc-100" href="/blog">
+          Blog
+        </Link>
         <Link className="font-handwritten text-lg hover:underline underline-offset-4 text-zinc-900 dark:text-zinc-100" href="/pricing">
           Pricing
         </Link>
