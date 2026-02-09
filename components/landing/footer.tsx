@@ -7,10 +7,10 @@ export function Footer() {
         © 2026 IndexFast. All rights reserved.
       </p>
       <nav className="sm:ml-auto flex gap-6 sm:gap-8">
-        <Link className="font-handwritten text-sm hover:underline underline-offset-4 text-zinc-900 dark:text-zinc-100" href="#">
+        <Link className="text-xs hover:underline underline-offset-4" href="/terms">
           Terms of Service
         </Link>
-        <Link className="font-handwritten text-sm hover:underline underline-offset-4 text-zinc-900 dark:text-zinc-100" href="#">
+        <Link className="text-xs hover:underline underline-offset-4" href="/privacy">
           Privacy
         </Link>
       </nav>
