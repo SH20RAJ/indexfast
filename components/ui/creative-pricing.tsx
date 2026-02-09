@@ -2,14 +2,16 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface PricingTier {
+export interface PricingTier {
     name: string;
     icon: React.ReactNode;
-    price: number;
+    price: number | string;
     description: string;
     features: string[];
     popular?: boolean;
-    color: string;
+    color: 'blue' | 'amber' | 'purple' | 'green';
+    buttonText?: string;
+    href?: string;
 }
 
 function CreativePricing({
@@ -175,4 +177,3 @@ function CreativePricing({
 
 
 export { CreativePricing }
-export type { PricingTier }

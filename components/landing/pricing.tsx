@@ -1,5 +1,5 @@
 import { CreativePricing, PricingTier } from '@/components/ui/creative-pricing'
-import { Rocket, Sparkles } from 'lucide-react'
+import { Rocket, Sparkles, Zap } from 'lucide-react'
 
 const pricingTiers: PricingTier[] = [
     {
@@ -29,6 +29,22 @@ const pricingTiers: PricingTier[] = [
         ],
         popular: true,
         color: "amber",
+    },
+    {
+        name: "Enterprise",
+        icon: <Zap className="w-6 h-6" />,
+        price: "Custom",
+        description: "For large optimizations and dedicated support.",
+        features: [
+            "Everything in Pro",
+            "Custom API Limits",
+            "Dedicated Account Manager",
+            "SLA Support",
+            "Onboarding Formatting"
+        ],
+        color: "purple",
+        buttonText: "Contact Us",
+        href: "mailto:sales@indexfast.com" // Or a contact form link
     }
 ]
 
