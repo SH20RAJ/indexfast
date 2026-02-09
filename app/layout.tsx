@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackClientApp } from "../stack/client";
 import { Patrick_Hand, Inter } from "next/font/google";
@@ -27,6 +28,8 @@ export const viewport = {
   maximumScale: 1,
 };
 
+import { UserSync } from "@/components/auth/user-sync";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -47,6 +50,9 @@ export default function RootLayout({
               enableSystem={false}
               disableTransitionOnChange
             >
+              <Suspense>
+                <UserSync />
+              </Suspense>
               {children}
               <Toaster />
             </ThemeProvider>
