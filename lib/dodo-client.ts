@@ -7,7 +7,7 @@
 
 const DODO_API_BASE = 'https://api.dodopayments.com/v1';
 
-interface DodoCustomer {
+export interface DodoCustomer {
   customer_id: string;
   email: string;
   metadata?: Record<string, string>;
@@ -32,6 +32,24 @@ interface CreateCheckoutParams {
   success_url: string;
   cancel_url: string;
   metadata?: Record<string, string>;
+}
+
+export interface DodoSubscription {
+  subscription_id: string;
+  customer_id: string;
+  status: string;
+  plan_id: string;
+  current_period_start: number;
+  current_period_end: number;
+  cancel_at_period_end: boolean;
+  metadata?: Record<string, string>;
+}
+
+export interface DodoWebhookEvent {
+  type: string;
+  data: any; // Ideally this should be a union of possible data types, but 'any' is practical for now
+  id: string;
+  created_at: string;
 }
 
 class DodoPaymentsClient {
