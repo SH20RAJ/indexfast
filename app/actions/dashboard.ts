@@ -184,21 +184,4 @@ export async function toggleAutoIndex(siteId: string, enabled: boolean) {
     }
 }
 
-export async function fetchGSCSites() {
-    const user = await stackServerApp.getUser();
-    if (!user) return { error: "Unauthorized" };
-
-    // TODO: Retrieve Google OAuth Access Token from StackAuth or DB.
-    // Since we migrated from Supabase, we might need to re-connect GSC via StackAuth 
-    // or store the refresh token in our `users` table.
-    // For now, returning mock data to demonstrate the UI flow.
-    
-    // Mock GSC response
-    return {
-        sites: [
-            { siteUrl: "sc-domain:example.com", permissionLevel: "siteOwner" },
-            { siteUrl: "https://my-blog.org/", permissionLevel: "siteOwner" },
-            { siteUrl: "sc-domain:placer.ai", permissionLevel: "siteOwner" }
-        ]
-    };
-}
+// fetchGSCSites has been moved to app/actions/gsc.ts for better organization

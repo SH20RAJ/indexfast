@@ -7,6 +7,9 @@ export const users = pgTable('users', {
   stripeCustomerId: text('stripe_customer_id'),
   subscriptionStatus: text('subscription_status'), // active, canceled, past_due
   credits: integer('credits').default(10).notNull(), // Daily submission credits
+  gscRefreshToken: text('gsc_refresh_token'), // Google OAuth refresh token for GSC API
+  gscAccessToken: text('gsc_access_token'), // Google OAuth access token for GSC API
+  gscTokenExpiry: timestamp('gsc_token_expiry'), // When the access token expires
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

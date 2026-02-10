@@ -67,15 +67,33 @@ export default function SitesManager({ initialSites }: { initialSites: any[] }) 
   const [showGSCModal, setShowGSCModal] = useState(false);
   const [gscSites, setGscSites] = useState<any[]>([]);
   const [loadingGSC, setLoadingGSC] = useState(false);
+  const [gscConnected, setGscConnected] = useState(false);
+  const [needsAuth, setNeedsAuth] = useState(false);
   
   const openGSCModal = async () => {
       setShowGSCModal(true);
       setLoadingGSC(true);
+      setNeedsAuth(false);
+      
       try {
-           // Dynamic import to avoid server-side issues if any, though here it's a server action
-           const { fetchGSCSites } = await import("@/app/actions/dashboard");
+           // Check if GSC is connected and fetch sites
+           const { fetchGSCSites, checkGSCConnection } = await import("@/app/actions/gsc");
+           
+           const isConnected = await checkGSCConnection();
+           setGscConnected(isConnected);
+           
+           if (!isConnected) {
+               setNeedsAuth(true);
+               setLoadingGSC(false);
+               return;
+           }
+           
            const result = await fetchGSCSites();
-           if (result.sites) {
+           
+           if (result.needsAuth) {
+               setNeedsAuth(true);
+               setGscConnected(false);
+           } else if (result.sites) {
                setGscSites(result.sites);
            } else {
                console.error(result.error);
@@ -84,6 +102,16 @@ export default function SitesManager({ initialSites }: { initialSites: any[] }) 
           console.error(e);
       }
       setLoadingGSC(false);
+  }
+
+  const handleConnectGSC = async () => {
+      try {
+          const { initiateGoogleOAuth } = await import("@/app/actions/gsc");
+          const authUrl = await initiateGoogleOAuth();
+          window.location.href = authUrl;
+      } catch (e) {
+          console.error(e);
+      }
   }
 
   return (
@@ -163,6 +191,16 @@ export default function SitesManager({ initialSites }: { initialSites: any[] }) 
                     <div className="p-4 overflow-y-auto flex-1">
                         {loadingGSC ? (
                             <div className="flex justify-center py-8"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
+                        ) : needsAuth ? (
+                            <div className="text-center py-8 space-y-4">
+                                <Globe className="w-12 h-12 mx-auto text-muted-foreground" />
+                                <p className="text-muted-foreground">
+                                    Connect your Google Search Console to import sites
+                                </p>
+                                <CreativeButton onClick={handleConnectGSC} variant="primary">
+                                    Connect Google Account
+                                </CreativeButton>
+                            </div>
                         ) : (
                             <div className="space-y-2">
                                 {gscSites.map((site) => (
@@ -171,8 +209,8 @@ export default function SitesManager({ initialSites }: { initialSites: any[] }) 
                                         className="w-full text-left p-3 hover:bg-muted rounded-md border flex items-center justify-between group"
                                         onClick={() => {
                                             // Handle import
-                                            const domain = site.siteUrl.replace("sc-domain:", "");
-                                            handleImport(domain); // We can improve this to use the exact gsc url
+                                            const domain = site.siteUrl.replace("sc-domain:", "").replace("https://", "").replace("http://", "").replace(/\/$/, "");
+                                            handleImport(domain);
                                             setShowGSCModal(false);
                                         }}
                                     >
