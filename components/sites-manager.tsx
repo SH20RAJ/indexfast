@@ -140,11 +140,8 @@ export default function SitesManager({ initialSites }: { initialSites: any[] }) 
             <CreativeCard className="col-span-full p-8 text-center text-muted-foreground border-dashed">
                 <p className="font-handwritten text-xl mb-4">No sites connected yet.</p>
                 <div className="flex justify-center gap-4">
-                    <CreativeButton onClick={() => {
-                        const url = prompt("Enter site URL (e.g., https://example.com):");
-                        if (url) handleImport(url);
-                    }} disabled={actioning === 'import'}>
-                        {actioning === 'import' ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+                    <CreativeButton onClick={() => alert("Feature coming soon! Please use 'Import from GSC' for now.")} variant="outline" className="opacity-50">
+                        <Plus className="w-4 h-4 mr-2" />
                         Add Manually
                     </CreativeButton>
                     <CreativeButton variant="secondary" onClick={openGSCModal}>
