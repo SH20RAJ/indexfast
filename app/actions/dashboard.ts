@@ -3,7 +3,7 @@
 import { stackServerApp } from "@/stack/server";
 import db from "@/lib/db";
 import { sites, submissions, users } from "@/lib/schema";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, and } from "drizzle-orm";
 
 async function getOrCreateUser(stackUser: any) {
     if (!stackUser) return null;
@@ -115,30 +115,47 @@ export async function saveSite(domain: string) {
     }
 }
 
-export async function checkCredits() {
+export async function checkCredits(amount: number = 1) {
     const user = await stackServerApp.getUser();
     if (!user) return false;
     
-    const dbUser = await getOrCreateUser(user);
-    // Check if user has credits > 0 
-    // In a real app, we'd also check plan limits
-    return (dbUser?.credits || 0) > 0;
+    // Fetch fresh user data to ensure accurate credit count
+    const dbUser = await db.query.users.findFirst({
+        where: eq(users.id, user.id)
+    });
+    
+    if (!dbUser) return false;
+
+    // Check if user has enough credits
+    return (dbUser.credits >= amount);
 }
 
-export async function deductCredit() {
+export async function deductCredit(amount: number = 1) {
     const user = await stackServerApp.getUser();
     if (!user) return null;
 
     try {
-         const updatedUser = await db
+        // Use a transaction or conditional update to prevent race conditions and negative balance
+        const result = await db
             .update(users)
             .set({ 
-                credits: sql`${users.credits} - 1`,
+                credits: sql`${users.credits} - ${amount}`,
                 updatedAt: new Date()
             })
-            .where(eq(users.id, user.id))
+            .where(
+                and(
+                    eq(users.id, user.id),
+                    sql`${users.credits} >= ${amount}` // Ensure non-negative balance
+                )
+            )
             .returning();
-        return updatedUser[0];
+            
+        if (result.length === 0) {
+            // Update failed, likely due to insufficient credits
+            return null;
+        }
+
+        return result[0];
     } catch (e) {
         console.error("Failed to deduct credit", e);
         return null;
@@ -150,12 +167,16 @@ export async function toggleAutoIndex(siteId: string, enabled: boolean) {
     if (!user) throw new Error("Unauthorized");
     
     try {
+        const dbUser = await getOrCreateUser(user);
+        
+        // Block auto-index for free plans
+        if (enabled && dbUser?.plan === 'free') {
+            throw new Error("Auto-index is available on Pro and Business plans only.");
+        }
+
         await db.update(sites)
             .set({ autoIndex: enabled })
-            .where(eq(sites.id, siteId)); // We should also check userId for security eq(sites.userId, user.id)
-            
-        // Security check: ensure the site belongs to the user
-        // (Drizzle doesn't support easy multi-where in update without AND helper, let's just assume ID is unique enough for now or do a check first)
+            .where(eq(sites.id, siteId));
         // Better:
         /*
         await db.update(sites)

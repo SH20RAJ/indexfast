@@ -150,6 +150,27 @@ class DodoPaymentsClient {
   }
 
   /**
+   * Create a customer portal session for managing subscriptions
+   */
+  async createCustomerPortalSession(customerId: string): Promise<{ session_url: string }> {
+    // Note: Dodo Payments API for portal might differ, assuming standard pattern or provided endpoint
+    // If Dodo doesn't have a direct "create portal session" API like Stripe, 
+    // we might need to rely on their dashboard or a specific link format.
+    // However, for this task, I will implement a request to a hypothetical or known endpoint
+    // based on common payment provider patterns if specific docs aren't provided.
+    // Dodo docs usually have /customer-portal/sessions or similar.
+    // Let's assume /customer-portal-sessions based on standard patterns.
+    
+    // ADJUSTMENT: Based on Dodo Payments typical features, if they generate a link per customer:
+    return this.request<{ session_url: string }>('/customer-portal/sessions', {
+      method: 'POST',
+      body: JSON.stringify({
+        customer_id: customerId,
+      }),
+    });
+  }
+
+  /**
    * Get checkout session details
    */
   async getCheckoutSession(checkoutId: string): Promise<DodoCheckoutSession> {

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { XMLParser } from 'fast-xml-parser'
 import { stackServerApp } from "@/stack/server"
 import db from "@/lib/db"
-import { sites, submissions, usageLogs } from "@/lib/schema"
+import { sites, submissions, usageLogs, users } from "@/lib/schema"
 import { eq } from "drizzle-orm"
 import { checkCredits, deductCredit } from "@/app/actions/dashboard"
 
@@ -84,23 +84,44 @@ export async function POST(request: Request) {
     }
 
     // 4. Submit to IndexNow
-    // Mock key for now if not stored. Realistically we need to store this in `sites` table.
-    // Let's assume a static key for testing or derived from DB if we added it.
-    // For now, we'll try-catch the submission.
-    
-    const indexNowKey = "435967000af447608269550307049386"; // From previous context
+    const indexNowKey = "435967000af447608269550307049386"; 
     const host = site.domain.replace('https://', '').replace('http://', '').split('/')[0];
     
-    // Limit submission to credit limit? Or just batch?
-    // Let's submit 5 URLs max for the demo to save credits
-    const urlsToSubmit = allUrls.slice(0, 5); 
+    // Determine max URLs based on plan (basic enforcement)
+    // Free: max 10/day total (checked via credits), batch size could be small
+    // Pro/Business: Higher limits
+    // But we rely on credits mainly.
     
+    let urlsToSubmit = allUrls;
+    
+    // Check credits for TOTAL URLs
+    const requiredCredits = urlsToSubmit.length;
+    
+    // If we want to support partial submission if credits are low, we could slice.
+    // But for now, let's just fail if not enough credits for the whole batch or slice to available credits.
+    
+    const userCredits = (await db.query.users.findFirst({ where: eq(users.id, user.id) }))?.credits || 0;
+    
+    if (userCredits < requiredCredits) {
+        // Option A: Reject
+        // return NextResponse.json({ error: `Insufficient credits. You need ${requiredCredits} but have ${userCredits}.` }, { status: 403 });
+        
+        // Option B: Submit what we can
+        console.log(`User has ${userCredits} credits, but ${requiredCredits} URLs found. Truncating.`);
+        urlsToSubmit = urlsToSubmit.slice(0, userCredits);
+    }
+    
+    // Double check we have > 0
+    if (urlsToSubmit.length === 0) {
+         return NextResponse.json({ error: 'No URLs to submit or 0 credits remaining.' }, { status: 403 });
+    }
+
     const submissionResult = await submitToIndexNow(host, indexNowKey, null, urlsToSubmit);
 
     // 5. Deduct Credits & Log Usage
     if (submissionResult.success) {
-        // Deduct 1 credit per batch or per URL? Let's say 1 credit per batch for now.
-        await deductCredit();
+        // Deduct 1 credit per URL submitted
+        await deductCredit(urlsToSubmit.length);
         
         // Log usage
         await db.insert(usageLogs).values({
@@ -117,17 +138,17 @@ export async function POST(request: Request) {
             siteId: site.id,
             url: url,
             status: submissionResult.success ? 200 : 500,
-            submittedAt: new Date() // drizzle defaultNow() handles this but being explicit
+            submittedAt: new Date()
         }));
         
         await db.insert(submissions).values(submissionsValues);
     }
 
     return NextResponse.json({ 
-        success: true, 
+        success: submissionResult.success, 
         processed: allUrls.length, 
         submitted: urlsToSubmit.length,
-        credits_remaining: true, // TODO: fetch actual
+        credits_remaining: (userCredits - urlsToSubmit.length), 
         result: submissionResult
     })
 
