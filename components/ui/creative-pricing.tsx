@@ -12,6 +12,7 @@ export interface PricingTier {
     color: 'blue' | 'amber' | 'purple' | 'green';
     buttonText?: string;
     href?: string;
+    customButton?: React.ReactNode; // Custom button component to override default
 }
 
 function CreativePricing({
@@ -133,32 +134,36 @@ function CreativePricing({
                                 ))}
                             </div>
 
-                            <Button
-                                className={cn(
-                                    "w-full h-12 font-handwritten text-lg relative",
-                                    "border-2 border-zinc-900 dark:border-white",
-                                    "transition-all duration-300",
-                                    "shadow-[4px_4px_0px_0px] shadow-zinc-900 dark:shadow-white",
-                                    "hover:shadow-[6px_6px_0px_0px]",
-                                    "hover:translate-x-[-2px] hover:translate-y-[-2px]",
-                                    tier.popular
-                                        ? [
-                                              "bg-amber-400 text-zinc-900",
-                                              "hover:bg-amber-300",
-                                              "active:bg-amber-400",
-                                              "dark:hover:bg-amber-300",
-                                              "dark:active:bg-amber-400",
-                                          ]
-                                        : [
-                                              "bg-zinc-50 dark:bg-zinc-800",
-                                              "text-zinc-900 dark:text-white",
-                                              "hover:bg-white dark:hover:bg-zinc-700",
-                                              "active:bg-zinc-50 dark:active:bg-zinc-800",
-                                          ]
-                                )}
-                            >
-                                Get Started
-                            </Button>
+                            {tier.customButton ? (
+                                tier.customButton
+                            ) : (
+                                <Button
+                                    className={cn(
+                                        "w-full h-12 font-handwritten text-lg relative",
+                                        "border-2 border-zinc-900 dark:border-white",
+                                        "transition-all duration-300",
+                                        "shadow-[4px_4px_0px_0px] shadow-zinc-900 dark:shadow-white",
+                                        "hover:shadow-[6px_6px_0px_0px]",
+                                        "hover:translate-x-[-2px] hover:translate-y-[-2px]",
+                                        tier.popular
+                                            ? [
+                                                  "bg-amber-400 text-zinc-900",
+                                                  "hover:bg-amber-300",
+                                                  "active:bg-amber-400",
+                                                  "dark:hover:bg-amber-300",
+                                                  "dark:active:bg-amber-400",
+                                              ]
+                                            : [
+                                                  "bg-zinc-50 dark:bg-zinc-800",
+                                                  "text-zinc-900 dark:text-white",
+                                                  "hover:bg-white dark:hover:bg-zinc-700",
+                                                  "active:bg-zinc-50 dark:active:bg-zinc-800",
+                                              ]
+                                    )}
+                                >
+                                    {tier.buttonText || 'Get Started'}
+                                </Button>
+                            )}
                         </div>
                     </div>
                 ))}

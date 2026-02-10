@@ -40,12 +40,14 @@ export async function syncUserPlanFromSubscription(userId: string) {
 
   if (!activeSubscription) {
     // No active subscription, set to free
+    const freeCredits = getPlanCredits('free');
     await db
       .update(users)
       .set({
         plan: 'free',
         subscriptionStatus: null,
         planExpiresAt: null,
+        credits: freeCredits, // Reset to free tier credits
         updatedAt: new Date(),
       })
       .where(eq(users.id, userId));
@@ -54,18 +56,22 @@ export async function syncUserPlanFromSubscription(userId: string) {
   }
 
   // Update user plan from active subscription
+  const newPlan = activeSubscription.plan as PlanTier;
+  const newCredits = getPlanCredits(newPlan);
+
   await db
     .update(users)
     .set({
-      plan: activeSubscription.plan as PlanTier,
+      plan: newPlan,
       subscriptionStatus: activeSubscription.status,
       planExpiresAt: activeSubscription.currentPeriodEnd,
+      credits: newCredits, // Update credits to match new plan
       updatedAt: new Date(),
     })
     .where(eq(users.id, userId));
 
   return {
-    plan: activeSubscription.plan as PlanTier,
+    plan: newPlan,
     expiresAt: activeSubscription.currentPeriodEnd,
   };
 }
