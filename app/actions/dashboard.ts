@@ -163,20 +163,24 @@ export async function deductCredit(amount: number = 1) {
 }
 
 export async function toggleAutoIndex(siteId: string, enabled: boolean) {
-    const user = await stackServerApp.getUser();
-    if (!user) throw new Error("Unauthorized");
-    
-    try {
-        const dbUser = await getOrCreateUser(user);
-        
-        // Block auto-index for free plans
-        if (enabled && dbUser?.plan === 'free') {
-            throw new Error("Auto-index is available on Pro and Business plans only.");
-        }
+    if (!enabled) {
+        const user = await stackServerApp.getUser();
+        if (!user) throw new Error("Unauthorized");
+        await db.update(sites).set({ autoIndex: false }).where(eq(sites.id, siteId));
+        return { success: true };
+    }
 
-        await db.update(sites)
-            .set({ autoIndex: enabled })
-            .where(eq(sites.id, siteId));
+    try {
+        const guard = await import("@/lib/plan-guard");
+        const { allowed, error, user } = await guard.enforcePlanLimits({ requiredPlan: 'pro', featureName: 'Auto-indexing' });
+        
+        if (!allowed || !user) throw new Error(error || "Unauthorized");
+
+        /* Old check removed */ 
+
+        const site = await db.query.sites.findFirst({
+            where: (fields, { eq, and }) => and(eq(fields.id, siteId), eq(fields.userId, user.id))
+        });
         // Better:
         /*
         await db.update(sites)
