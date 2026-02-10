@@ -3,9 +3,11 @@ import { pgTable, text, timestamp, uuid, integer, boolean, unique, jsonb } from 
 export const users = pgTable('users', {
   id: text('id').primaryKey(), // StackAuth ID
   email: text('email').notNull(),
-  plan: text('plan').default('free').notNull(), // free, pro, business
-  stripeCustomerId: text('stripe_customer_id'),
-  subscriptionStatus: text('subscription_status'), // active, canceled, past_due
+  plan: text('plan').default('free').notNull(), // free, pro, business - derived from active subscription
+  planExpiresAt: timestamp('plan_expires_at'), // When the current plan expires (null for free/lifetime)
+  stripeCustomerId: text('stripe_customer_id'), // Stripe customer ID
+  dodoCustomerId: text('dodo_customer_id'), // Dodo Payments customer ID
+  subscriptionStatus: text('subscription_status'), // active, canceled, past_due, trialing
   credits: integer('credits').default(10).notNull(), // Daily submission credits
   gscRefreshToken: text('gsc_refresh_token'), // Google OAuth refresh token for GSC API
   gscAccessToken: text('gsc_access_token'), // Google OAuth access token for GSC API
@@ -15,13 +17,17 @@ export const users = pgTable('users', {
 });
 
 export const subscriptions = pgTable('subscriptions', {
-  id: text('id').primaryKey(), // Stripe Subscription ID
-  userId: text('user_id').references(() => users.id).notNull(),
-  status: text('status').notNull(),
-  priceId: text('price_id'),
+  id: text('id').primaryKey(), // Subscription ID from provider (Stripe or Dodo)
+  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  provider: text('provider').notNull(), // 'stripe' or 'dodo'
+  status: text('status').notNull(), // active, canceled, past_due, trialing, incomplete
+  plan: text('plan').notNull(), // pro, business - maps to users.plan
+  priceId: text('price_id'), // Price/Plan ID from provider
   currentPeriodStart: timestamp('current_period_start').notNull(),
   currentPeriodEnd: timestamp('current_period_end').notNull(),
+  cancelAtPeriodEnd: boolean('cancel_at_period_end').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 export const usageLogs = pgTable('usage_logs', {
