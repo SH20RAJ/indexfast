@@ -1,10 +1,18 @@
 import { Sidebar } from "@/components/dashboard/sidebar";
+import { stackServerApp } from "@/stack/server";
+import { redirect } from "next/navigation";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await stackServerApp.getUser();
+  
+  if (!user) {
+    redirect("/login");
+  }
+
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
