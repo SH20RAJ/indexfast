@@ -275,3 +275,28 @@ export async function getSiteDetails(domain: string) {
         return null;
     }
 }
+
+export async function deleteSite(siteId: string) {
+    const user = await stackServerApp.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    try {
+        // Verify ownership
+        const site = await db.query.sites.findFirst({
+            where: and(eq(sites.id, siteId), eq(sites.userId, user.id))
+        });
+
+        if (!site) throw new Error("Site not found");
+
+        // Delete submissions first (foreign key constraint)
+        await db.delete(submissions).where(eq(submissions.siteId, siteId));
+        
+        // Delete the site (sitemaps will cascade or we delete manually)
+        await db.delete(sites).where(eq(sites.id, siteId));
+
+        return { success: true };
+    } catch (error) {
+        console.error("Delete Site Error:", error);
+        return { success: false, error: (error as Error).message };
+    }
+}

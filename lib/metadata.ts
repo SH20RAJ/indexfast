@@ -33,7 +33,7 @@ const baseMetadata: Metadata = {
     description: 'Submit your URLs to Google, Bing, and Yandex automatically. The fastest way to get indexed.',
     images: [
       {
-        url: 'https://indexfast.com/og-image.jpg', // We should ensure this exists or use a placeholder
+        url: 'https://indexfast.com/og-image.png',
         width: 1200,
         height: 630,
         alt: 'IndexFast Dashboard',

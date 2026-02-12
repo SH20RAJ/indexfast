@@ -76,3 +76,16 @@ export const submissions = pgTable('submissions', {
   responseBody: jsonb('response_body'),
   submittedAt: timestamp('submitted_at').defaultNow().notNull(),
 });
+
+export const apiKeys = pgTable('api_keys', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  name: text('name').notNull(),               // "My CI/CD Key"
+  keyHash: text('key_hash').notNull(),         // SHA-256 hash of the full key
+  keyPrefix: text('key_prefix').notNull(),     // "ixf_live_" or "ixf_test_"
+  keyLast4: text('key_last4').notNull(),       // last 4 chars for display
+  isTest: boolean('is_test').default(false).notNull(),
+  lastUsedAt: timestamp('last_used_at'),
+  expiresAt: timestamp('expires_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
