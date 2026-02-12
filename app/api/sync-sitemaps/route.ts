@@ -1,13 +1,11 @@
 
 import { NextResponse } from 'next/server'
 import { XMLParser } from 'fast-xml-parser'
-import { stackServerApp } from "@/stack/server"
 import db from "@/lib/db"
-import { sites, submissions, usageLogs, users } from "@/lib/schema"
+import { sites, submissions, usageLogs } from "@/lib/schema"
 import { eq } from "drizzle-orm"
-import { checkCredits } from "@/app/actions/dashboard"
 
-// Helper to submit to IndexNow (simplified for Drizzle context)
+// Helper to submit to IndexNow
 async function submitToIndexNow(host: string, key: string, keyLocation: string | null, urlList: string[]) {
   try {
     const response = await fetch('https://api.indexnow.org/indexnow', {
@@ -21,8 +19,9 @@ async function submitToIndexNow(host: string, key: string, keyLocation: string |
       })
     });
     return { success: response.ok, status: response.status, message: response.statusText };
-  } catch (e: any) {
-    return { success: false, status: 500, message: e.message };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Unknown error';
+    return { success: false, status: 500, message: msg };
   }
 }
 
@@ -30,15 +29,21 @@ import { enforcePlanLimits } from "@/lib/plan-guard";
 import { deductCredit } from "@/app/actions/dashboard";
 
 export async function POST(request: Request) {
-  const { siteUrl } = await request.json() as { siteUrl: string }
+  // Parse body ONCE
+  const body = await request.json() as {
+    siteUrl?: string;
+    manualUrls?: string[];
+    sitemapUrl?: string;
+  };
+
+  const { siteUrl, manualUrls, sitemapUrl: specificSitemapUrl } = body;
 
   try {
     if (!siteUrl) {
         return NextResponse.json({ error: 'Missing siteUrl' }, { status: 400 });
     }
 
-    // 1. Initial Access Check
-    // We don't know credits yet as we haven't fetched sitemap, but let's at least check user existence
+    // 1. Access Check
     const { allowed, user, error } = await enforcePlanLimits();
     
     if (!allowed || !user) {
@@ -47,27 +52,20 @@ export async function POST(request: Request) {
 
     // 2. Fetch Site from DB
     const dbSite = await db.select().from(sites).where(eq(sites.gscSiteUrl, siteUrl)).limit(1);
-    // ... same site fetch ...
     if (!dbSite || dbSite.length === 0) {
         return NextResponse.json({ error: 'Site not found in DB' }, { status: 404 })
     }
     const site = dbSite[0];
 
-    // ... sitemap fetching ...
-    // ... sitemap fetching ...
+    // 3. Collect URLs to submit
     const allUrls: string[] = [];
 
-    // Check for manual URLs first
-    const { manualUrls, sitemapUrl: specificSitemapUrl } = await request.json() as { manualUrls?: string[], sitemapUrl?: string };
-
     if (manualUrls && Array.isArray(manualUrls) && manualUrls.length > 0) {
+        // Manual URL submission mode
         allUrls.push(...manualUrls);
     } else {
-        // Use provided sitemap URL or default
+        // Sitemap-based mode: use specific sitemap URL or fallback to default
         let targetSitemapUrl = specificSitemapUrl;
-
-        // If no specific sitemap, use default ONLY if we are not doing a manual sync
-        // But here we are doing a general sync if no manualUrls
         if (!targetSitemapUrl) {
             const protocol = site.domain.startsWith('http') ? '' : 'https://';
             targetSitemapUrl = `${protocol}${site.domain}/sitemap.xml`;
@@ -82,13 +80,31 @@ export async function POST(request: Request) {
                 
                 if (xmlObj.urlset && xmlObj.urlset.url) {
                     const urlList = Array.isArray(xmlObj.urlset.url) ? xmlObj.urlset.url : [xmlObj.urlset.url];
-                    const locs = urlList.map((u: any) => u.loc).filter(Boolean);
+                    const locs = urlList.map((u: { loc?: string }) => u.loc).filter(Boolean) as string[];
                     allUrls.push(...locs);
                 } else if (xmlObj.sitemapindex && xmlObj.sitemapindex.sitemap) {
-                     console.warn("Sitemap index found. Recursive fetching not yet fully supported inline.");
-                     // Optionally fetch first level
-                     const sitemapList = Array.isArray(xmlObj.sitemapindex.sitemap) ? xmlObj.sitemapindex.sitemap : [xmlObj.sitemapindex.sitemap];
-                     // Logic to handle sitemap index could be added here
+                    // Sitemap index: fetch child sitemaps (1 level deep)
+                    const sitemapList = Array.isArray(xmlObj.sitemapindex.sitemap) 
+                        ? xmlObj.sitemapindex.sitemap 
+                        : [xmlObj.sitemapindex.sitemap];
+                    
+                    for (const sm of sitemapList) {
+                        if (!sm.loc) continue;
+                        try {
+                            const childRes = await fetch(sm.loc);
+                            if (childRes.ok) {
+                                const childXml = await childRes.text();
+                                const childObj = new XMLParser().parse(childXml);
+                                if (childObj.urlset && childObj.urlset.url) {
+                                    const urls = Array.isArray(childObj.urlset.url) ? childObj.urlset.url : [childObj.urlset.url];
+                                    const locs = urls.map((u: { loc?: string }) => u.loc).filter(Boolean) as string[];
+                                    allUrls.push(...locs);
+                                }
+                            }
+                        } catch (childErr) {
+                            console.error(`Failed to fetch child sitemap ${sm.loc}`, childErr);
+                        }
+                    }
                 }
             }
         } catch (e) {
@@ -97,21 +113,16 @@ export async function POST(request: Request) {
     }
     
     if (allUrls.length === 0) {
-        // ... fallback ...
         allUrls.push(site.domain);
     }
 
-    // 3. Strict Credit Enforcement with Guard
-    // Re-check with specific amount required
+    // 4. Credit Enforcement
     const requiredCredits = allUrls.length;
     let urlsToSubmit = allUrls;
 
-    // Check if user has enough credits for ALL found URLs
     const creditCheck = await enforcePlanLimits({ requiredCredits });
     
     if (!creditCheck.allowed) {
-        // If not enough for ALL, try partial if user has SOME credits
-        // User object is fresh from guard check
         const availableCredits = creditCheck.user!.credits;
         
         if (availableCredits > 0) {
@@ -122,13 +133,13 @@ export async function POST(request: Request) {
         }
     }
 
-    // 4. Submit to IndexNow
+    // 5. Submit to IndexNow
     const indexNowKey = "435967000af447608269550307049386"; 
     const host = site.domain.replace('https://', '').replace('http://', '').split('/')[0];
     
     const submissionResult = await submitToIndexNow(host, indexNowKey, null, urlsToSubmit);
 
-    // 5. Deduct Credits
+    // 6. Deduct Credits & Log
     if (submissionResult.success) {
         await deductCredit(urlsToSubmit.length);
         
@@ -140,7 +151,7 @@ export async function POST(request: Request) {
         });
     }
 
-    // 6. Save Submissions to DB
+    // 7. Save Submissions
     if (urlsToSubmit.length > 0) {
         const submissionsValues = urlsToSubmit.map(url => ({
             siteId: site.id,
@@ -152,8 +163,6 @@ export async function POST(request: Request) {
         await db.insert(submissions).values(submissionsValues);
     }
     
-    // Calculate remaining for response
-    // Fetch fresh just in case or calculate
     const finalCredits = (creditCheck.user!.credits > urlsToSubmit.length) 
         ? creditCheck.user!.credits - urlsToSubmit.length 
         : 0;
