@@ -13,7 +13,7 @@ export interface Tool {
 export const seoMarketingTools: Tool[] = [
   // Internal Tools
   {
-    name: "Placer Analytics",
+    name: "IndexFast Analytics",
     url: "/dashboard/analytics",
     category: "Internal",
     pricing: "Free",

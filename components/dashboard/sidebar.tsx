@@ -66,7 +66,7 @@ export function Sidebar() {
       )}>
         <div className="flex flex-col h-full">
           <div className="h-16 flex items-center justify-between px-4 border-b">
-            {!isCollapsed && <span className="text-xl font-bold font-handwritten tracking-tight">Placer.ai</span>}
+            {!isCollapsed && <span className="text-xl font-bold font-handwritten tracking-tight">IndexFast</span>}
             <button 
                 onClick={() => setIsCollapsed(!isCollapsed)}
                 className="hidden lg:flex p-1 hover:bg-muted rounded-md"
