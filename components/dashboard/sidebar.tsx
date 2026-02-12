@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { 
     LayoutDashboard, Settings, Globe, Menu, X, CreditCard, ChevronLeft, 
-    Link2, Wrench, Send, MapPin, History, Cog, Key
+    Link2, Wrench, Send, MapPin, History, Cog, Key, LogOut
 } from "lucide-react";
 import { useState } from "react";
+import { useUser } from "@stackframe/stack";
 import { ModeToggle } from "@/components/mode-toggle";
 import { DomainSwitcher } from "./domain-switcher";
 
@@ -39,6 +40,8 @@ const globalNavItems = [
 
 export function Sidebar({ sites }: { sites: SiteInfo[] }) {
     const pathname = usePathname();
+    const router = useRouter();
+    const user = useUser();
     const [isOpen, setIsOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -139,11 +142,27 @@ export function Sidebar({ sites }: { sites: SiteInfo[] }) {
                     </div>
 
                     {/* Footer */}
-                    <div className={cn("p-3 border-t", isCollapsed && "items-center flex flex-col")}>
+                    <div className={cn("p-3 border-t space-y-2", isCollapsed && "items-center flex flex-col")}>
                         <div className="flex items-center justify-between w-full">
                             {!isCollapsed && <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Theme</span>}
                             <ModeToggle />
                         </div>
+                        {user && (
+                            <button
+                                onClick={async () => {
+                                    await user.signOut();
+                                    router.push("/");
+                                }}
+                                className={cn(
+                                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors w-full",
+                                    "text-muted-foreground hover:bg-destructive/10 hover:text-destructive",
+                                    isCollapsed && "justify-center px-2"
+                                )}
+                            >
+                                <LogOut className="h-4 w-4 flex-shrink-0" />
+                                {!isCollapsed && <span>Sign Out</span>}
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
