@@ -300,3 +300,21 @@ export async function deleteSite(siteId: string) {
         return { success: false, error: (error as Error).message };
     }
 }
+
+export async function clearSiteHistory(siteId: string) {
+    const user = await stackServerApp.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    try {
+        const site = await db.query.sites.findFirst({
+            where: and(eq(sites.id, siteId), eq(sites.userId, user.id))
+        });
+        if (!site) throw new Error("Site not found");
+
+        const result = await db.delete(submissions).where(eq(submissions.siteId, siteId));
+        return { success: true };
+    } catch (error) {
+        console.error("Clear History Error:", error);
+        return { success: false, error: (error as Error).message };
+    }
+}

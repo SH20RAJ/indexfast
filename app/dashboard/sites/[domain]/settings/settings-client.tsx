@@ -1,21 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { CreativeCard } from "@/components/ui/creative-card";
-import { CreativeButton } from "@/components/ui/creative-button";
-import { ToggleLeft, ToggleRight, Trash2, Check, AlertCircle, Shield, Key, Loader2 } from "lucide-react";
+import { DashCard } from "@/components/dashboard/dash-card";
+import { DashButton } from "@/components/dashboard/dash-button";
+import { ToggleLeft, ToggleRight, Trash2, Shield, AlertCircle, Key, Loader2 } from "lucide-react";
 import { toggleAutoIndex } from "@/app/actions/dashboard";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 interface SiteData {
-    id: string;
-    domain: string;
-    gscSiteUrl: string;
-    isVerified: boolean;
-    autoIndex: boolean;
-    createdAt: string | Date;
-    permissionLevel: string | null;
+    id: string; domain: string; gscSiteUrl: string; isVerified: boolean;
+    autoIndex: boolean; createdAt: string | Date; permissionLevel: string | null;
 }
 
 export default function SiteSettingsClient({ site }: { site: SiteData }) {
@@ -26,20 +21,14 @@ export default function SiteSettingsClient({ site }: { site: SiteData }) {
 
     const handleToggleAutoIndex = async () => {
         try {
-            const newState = !autoIndex;
-            setAutoIndex(newState);
+            const newState = !autoIndex; setAutoIndex(newState);
             await toggleAutoIndex(site.id, newState);
             toast.success(newState ? "Auto-indexing enabled" : "Auto-indexing disabled");
         } catch (e: unknown) {
             setAutoIndex(autoIndex);
             const err = e as { message?: string };
-            if (err.message?.includes("requires the pro plan")) {
-                toast.error("Pro plan required", {
-                    action: { label: "Upgrade", onClick: () => router.push("/dashboard/billing") }
-                });
-            } else {
-                toast.error("Failed", { description: err.message });
-            }
+            if (err.message?.includes("requires the pro plan")) toast.error("Pro plan required", { action: { label: "Upgrade", onClick: () => router.push("/dashboard/billing") } });
+            else toast.error("Failed", { description: err.message });
         }
     };
 
@@ -48,134 +37,93 @@ export default function SiteSettingsClient({ site }: { site: SiteData }) {
         try {
             const { deleteSite } = await import("@/app/actions/dashboard");
             const result = await deleteSite(site.id);
-            if (result?.success) {
-                toast.success("Site removed");
-                router.push("/dashboard/sites");
-            } else {
-                toast.error("Failed to delete site");
-            }
-        } catch (e: unknown) {
-            toast.error("Failed", { description: (e as Error).message });
-        }
-        setDeleting(false);
-        setShowDeleteConfirm(false);
+            if (result?.success) { toast.success("Site removed"); router.push("/dashboard/sites"); }
+            else toast.error("Failed to delete site");
+        } catch (e: unknown) { toast.error("Failed", { description: (e as Error).message }); }
+        setDeleting(false); setShowDeleteConfirm(false);
     };
 
     return (
-        <div className="space-y-8 max-w-3xl">
+        <div className="space-y-8 max-w-3xl animate-in fade-in duration-500">
             <div>
-                <h1 className="text-3xl font-bold font-handwritten tracking-tight">Site Settings</h1>
+                <h1 className="text-3xl font-bold tracking-tight">Site Settings</h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                    Configuration for <strong>{site.domain}</strong>
+                    Configuration for <span className="font-medium text-foreground">{site.domain}</span>
                 </p>
             </div>
 
-            {/* Verification Status */}
-            <CreativeCard className="p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        site.isVerified ? "bg-emerald-500/10" : "bg-amber-500/10"
-                    }`}>
-                        {site.isVerified 
-                            ? <Shield className="w-5 h-5 text-emerald-500" /> 
-                            : <AlertCircle className="w-5 h-5 text-amber-500" />
-                        }
+            {/* Verification */}
+            <DashCard glow={site.isVerified ? "emerald" : "amber"} className="p-6">
+                <div className="flex items-center gap-4">
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${site.isVerified ? "bg-emerald-500/10" : "bg-amber-500/10"}`}>
+                        {site.isVerified ? <Shield className="w-5 h-5 text-emerald-400" /> : <AlertCircle className="w-5 h-5 text-amber-400" />}
                     </div>
-                    <div>
-                        <h3 className="font-semibold">Verification</h3>
-                        <p className="text-sm text-muted-foreground">
-                            {site.isVerified ? "This site is verified in Google Search Console." : "Not verified. Some features may be limited."}
-                        </p>
+                    <div className="flex-1">
+                        <h3 className="font-semibold text-sm">Verification</h3>
+                        <p className="text-xs text-muted-foreground/60">{site.isVerified ? "Verified in Google Search Console." : "Not verified. Some features may be limited."}</p>
                     </div>
-                    <div className={`ml-auto px-3 py-1 rounded-full text-xs font-bold border ${
-                        site.isVerified 
-                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" 
-                            : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                    }`}>
+                    <div className={`px-3 py-1 rounded-full text-[10px] font-bold ${site.isVerified ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"}`}>
                         {site.isVerified ? "Verified" : "Unverified"}
                     </div>
                 </div>
-            </CreativeCard>
+            </DashCard>
 
             {/* Auto-Indexing */}
-            <CreativeCard className="p-6 space-y-2">
+            <DashCard className="p-6">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                            <Key className="w-5 h-5 text-blue-500" />
+                    <div className="flex items-center gap-4">
+                        <div className="w-11 h-11 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                            <Key className="w-5 h-5 text-blue-400" />
                         </div>
                         <div>
-                            <h3 className="font-semibold">Auto-Indexing</h3>
-                            <p className="text-sm text-muted-foreground">
-                                Automatically submit new URLs from sitemaps when syncing.
-                            </p>
+                            <h3 className="font-semibold text-sm">Auto-Indexing</h3>
+                            <p className="text-xs text-muted-foreground/60">Automatically submit new URLs from sitemaps when syncing.</p>
                         </div>
                     </div>
                     <button onClick={handleToggleAutoIndex} className="hover:opacity-80 transition-opacity">
-                        {autoIndex
-                            ? <ToggleRight className="w-8 h-8 text-emerald-500" />
-                            : <ToggleLeft className="w-8 h-8 text-muted-foreground" />
-                        }
+                        {autoIndex ? <ToggleRight className="w-8 h-8 text-emerald-400" /> : <ToggleLeft className="w-8 h-8 text-muted-foreground/30" />}
                     </button>
                 </div>
-            </CreativeCard>
+            </DashCard>
 
-            {/* Site Info */}
-            <CreativeCard className="p-6 space-y-4">
-                <h3 className="font-semibold">Property Details</h3>
-                <div className="space-y-3 text-sm">
-                    <div className="flex justify-between py-2 border-b border-dashed">
-                        <span className="text-muted-foreground">Domain</span>
-                        <span className="font-mono">{site.domain}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-dashed">
-                        <span className="text-muted-foreground">GSC URL</span>
-                        <span className="font-mono text-xs">{site.gscSiteUrl}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-dashed">
-                        <span className="text-muted-foreground">Permission Level</span>
-                        <span className="capitalize">{site.permissionLevel || "—"}</span>
-                    </div>
-                    <div className="flex justify-between py-2">
-                        <span className="text-muted-foreground">Added</span>
-                        <span>{new Date(site.createdAt).toLocaleDateString()}</span>
-                    </div>
+            {/* Property Details */}
+            <DashCard className="p-6 space-y-4">
+                <h3 className="text-sm font-semibold">Property Details</h3>
+                <div className="space-y-0 text-sm">
+                    {[
+                        ["Domain", site.domain],
+                        ["GSC URL", site.gscSiteUrl],
+                        ["Permission", site.permissionLevel || "—"],
+                        ["Added", new Date(site.createdAt).toLocaleDateString()],
+                    ].map(([label, value], i) => (
+                        <div key={i} className="flex justify-between py-3 border-b border-border/20 last:border-0">
+                            <span className="text-muted-foreground/60">{label}</span>
+                            <span className={label === "GSC URL" ? "font-mono text-xs" : "capitalize"}>{value}</span>
+                        </div>
+                    ))}
                 </div>
-            </CreativeCard>
+            </DashCard>
 
             {/* Danger Zone */}
-            <CreativeCard className="p-6 border-red-500/20 space-y-4">
-                <h3 className="font-semibold text-red-500">Danger Zone</h3>
+            <DashCard variant="danger" className="p-6 space-y-4">
+                <h3 className="font-semibold text-sm text-red-400">Danger Zone</h3>
                 <div className="flex items-center justify-between">
                     <div>
                         <p className="text-sm font-medium">Remove this property</p>
-                        <p className="text-xs text-muted-foreground">This will remove the site and all its data from IndexFast. This cannot be undone.</p>
+                        <p className="text-xs text-muted-foreground/50">Removes the site and all data permanently.</p>
                     </div>
                     {!showDeleteConfirm ? (
-                        <CreativeButton 
-                            variant="outline" 
-                            className="border-red-500/30 text-red-500 hover:bg-red-500/10" 
-                            onClick={() => setShowDeleteConfirm(true)}
-                        >
-                            <Trash2 className="w-4 h-4 mr-2" />
+                        <DashButton variant="danger" onClick={() => setShowDeleteConfirm(true)} icon={<Trash2 className="w-3.5 h-3.5" />} size="sm">
                             Remove
-                        </CreativeButton>
+                        </DashButton>
                     ) : (
                         <div className="flex items-center gap-2">
-                            <CreativeButton variant="outline" onClick={() => setShowDeleteConfirm(false)}>Cancel</CreativeButton>
-                            <CreativeButton 
-                                variant="primary"
-                                className="bg-red-500 hover:bg-red-600"
-                                onClick={handleDelete}
-                                disabled={deleting}
-                            >
-                                {deleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                                Confirm Delete
-                            </CreativeButton>
+                            <DashButton variant="ghost" size="sm" onClick={() => setShowDeleteConfirm(false)}>Cancel</DashButton>
+                            <DashButton variant="danger" size="sm" onClick={handleDelete} loading={deleting}>Confirm Delete</DashButton>
                         </div>
                     )}
                 </div>
-            </CreativeCard>
+            </DashCard>
         </div>
     );
 }

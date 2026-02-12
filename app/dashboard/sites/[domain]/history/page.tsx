@@ -11,7 +11,7 @@ export default async function HistoryPage({ params }: { params: Promise<{ domain
 
     return (
         <HistoryClient 
-            site={{ domain: data.site.domain }} 
+            site={{ id: data.site.id, domain: data.site.domain }} 
             submissions={JSON.parse(JSON.stringify(data.submissions))} 
         />
     );

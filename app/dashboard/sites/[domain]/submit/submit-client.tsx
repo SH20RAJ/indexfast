@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { CreativeCard } from "@/components/ui/creative-card";
-import { CreativeButton } from "@/components/ui/creative-button";
-import { Send, Loader2, Info } from "lucide-react";
+import { DashCard } from "@/components/dashboard/dash-card";
+import { DashButton } from "@/components/dashboard/dash-button";
+import { Send, Info } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -12,81 +12,61 @@ export default function SubmitClient({ site }: { site: { id: string; domain: str
     const [urls, setUrls] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
-    const urlList = urls
-        .split("\n")
-        .map(u => u.trim())
-        .filter(u => u.length > 0);
-
-    const validUrls = urlList.filter(u => {
-        try { new URL(u); return true; } catch { return false; }
-    });
+    const urlList = urls.split("\n").map(u => u.trim()).filter(u => u.length > 0);
+    const validUrls = urlList.filter(u => { try { new URL(u); return true; } catch { return false; } });
 
     const handleSubmit = async () => {
-        if (validUrls.length === 0) {
-            toast.error("No valid URLs", { description: "Enter at least one valid URL." });
-            return;
-        }
-
+        if (validUrls.length === 0) { toast.error("No valid URLs"); return; }
         setSubmitting(true);
         try {
             const res = await fetch("/api/sync-sitemaps", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    siteUrl: site.gscSiteUrl,
-                    manualUrls: validUrls,
-                }),
+                body: JSON.stringify({ siteUrl: site.gscSiteUrl, manualUrls: validUrls }),
             });
             const result = await res.json();
             if (result.success) {
-                toast.success(`Submitted ${result.submitted} URLs`, {
-                    description: `Credits remaining: ${result.credits_remaining}`
-                });
+                toast.success(`Submitted ${result.submitted} URLs`, { description: `Credits remaining: ${result.credits_remaining}` });
                 setUrls("");
                 router.refresh();
             } else {
                 toast.error("Submission failed", { description: result.error || result.message });
             }
-        } catch {
-            toast.error("An error occurred");
-        }
+        } catch { toast.error("An error occurred"); }
         setSubmitting(false);
     };
 
     return (
-        <div className="space-y-6 max-w-3xl">
+        <div className="space-y-6 max-w-3xl animate-in fade-in duration-500">
             <div>
-                <h1 className="text-3xl font-bold font-handwritten tracking-tight">Submit URLs</h1>
+                <h1 className="text-3xl font-bold tracking-tight">Submit URLs</h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                    Submit individual pages from <strong>{site.domain}</strong> for instant indexing via IndexNow.
+                    Submit pages from <span className="font-medium text-foreground">{site.domain}</span> for instant indexing.
                 </p>
             </div>
 
-            {/* Info banner */}
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-500/5 border border-blue-500/20 text-sm">
-                <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                    <p className="text-blue-600 dark:text-blue-400 font-medium">How it works</p>
-                    <p className="text-muted-foreground">
-                        Each URL is submitted to <strong>IndexNow</strong>, notifying Bing, Yandex, and other participating search engines. 
-                        Each URL costs 1 credit.
-                    </p>
+            {/* Info */}
+            <DashCard variant="accent" className="p-4">
+                <div className="flex items-start gap-3">
+                    <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                        <p className="text-sm font-medium text-primary">How it works</p>
+                        <p className="text-xs text-muted-foreground">
+                            Each URL is submitted to <strong>IndexNow</strong>, notifying Bing, Yandex & other search engines. 1 credit per URL.
+                        </p>
+                    </div>
                 </div>
-            </div>
+            </DashCard>
 
-            {/* Input area */}
-            <CreativeCard className="p-6 space-y-4">
+            {/* Input */}
+            <DashCard className="p-6 space-y-4">
                 <div className="flex items-center justify-between">
                     <label className="text-sm font-semibold">URLs to Submit</label>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span className={validUrls.length > 0 ? "text-emerald-500 font-bold" : ""}>
-                            {validUrls.length}
-                        </span>
-                        valid URL{validUrls.length !== 1 ? "s" : ""}
+                        <span className={validUrls.length > 0 ? "text-emerald-400 font-bold" : ""}>{validUrls.length}</span>
+                        valid{validUrls.length !== 1 ? "" : ""} URL{validUrls.length !== 1 ? "s" : ""}
                         {urlList.length > validUrls.length && (
-                            <span className="text-amber-500">
-                                ({urlList.length - validUrls.length} invalid)
-                            </span>
+                            <span className="text-amber-400">({urlList.length - validUrls.length} invalid)</span>
                         )}
                     </div>
                 </div>
@@ -95,34 +75,24 @@ export default function SubmitClient({ site }: { site: { id: string; domain: str
                     value={urls}
                     onChange={e => setUrls(e.target.value)}
                     placeholder={`https://${site.domain}/page-1\nhttps://${site.domain}/page-2\nhttps://${site.domain}/blog/my-post`}
-                    className="w-full min-h-[200px] p-4 text-sm font-mono bg-muted/30 border rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 placeholder:text-muted-foreground/40"
+                    className="w-full min-h-[200px] p-4 text-sm font-mono bg-muted/20 border border-border/50 rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 placeholder:text-muted-foreground/30 transition-all"
                     spellCheck={false}
                 />
 
-                <div className="flex items-center justify-between pt-2">
-                    <p className="text-xs text-muted-foreground">
-                        One URL per line. Must start with <code className="px-1 py-0.5 rounded bg-muted text-[10px]">https://</code>
+                <div className="flex items-center justify-between pt-1">
+                    <p className="text-xs text-muted-foreground/60">
+                        One URL per line • must start with <code className="px-1 py-0.5 rounded bg-muted/50 text-[10px]">https://</code>
                     </p>
-                    <CreativeButton
+                    <DashButton
                         onClick={handleSubmit}
-                        disabled={validUrls.length === 0 || submitting}
-                        variant="primary"
-                        className="min-w-[140px]"
+                        disabled={validUrls.length === 0}
+                        loading={submitting}
+                        icon={<Send className="w-4 h-4" />}
                     >
-                        {submitting ? (
-                            <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Submitting...
-                            </>
-                        ) : (
-                            <>
-                                <Send className="w-4 h-4 mr-2" />
-                                Submit {validUrls.length > 0 ? validUrls.length : ""} URL{validUrls.length !== 1 ? "s" : ""}
-                            </>
-                        )}
-                    </CreativeButton>
+                        Submit {validUrls.length > 0 ? validUrls.length : ""} URL{validUrls.length !== 1 ? "s" : ""}
+                    </DashButton>
                 </div>
-            </CreativeCard>
+            </DashCard>
         </div>
     );
 }
