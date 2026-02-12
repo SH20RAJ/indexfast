@@ -54,23 +54,46 @@ export async function POST(request: Request) {
     const site = dbSite[0];
 
     // ... sitemap fetching ...
-    const sitemapUrl = `${site.domain}/sitemap.xml`;
+    // ... sitemap fetching ...
     const allUrls: string[] = [];
-    try {
-        const xmlRes = await fetch(sitemapUrl);
-        if (xmlRes.ok) {
-            const xmlText = await xmlRes.text();
-            const parser = new XMLParser();
-            const xmlObj = parser.parse(xmlText);
-            
-            if (xmlObj.urlset && xmlObj.urlset.url) {
-                const urlList = Array.isArray(xmlObj.urlset.url) ? xmlObj.urlset.url : [xmlObj.urlset.url];
-                const locs = urlList.map((u: any) => u.loc).filter(Boolean);
-                allUrls.push(...locs);
-            }
+
+    // Check for manual URLs first
+    const { manualUrls, sitemapUrl: specificSitemapUrl } = await request.json() as { manualUrls?: string[], sitemapUrl?: string };
+
+    if (manualUrls && Array.isArray(manualUrls) && manualUrls.length > 0) {
+        allUrls.push(...manualUrls);
+    } else {
+        // Use provided sitemap URL or default
+        let targetSitemapUrl = specificSitemapUrl;
+
+        // If no specific sitemap, use default ONLY if we are not doing a manual sync
+        // But here we are doing a general sync if no manualUrls
+        if (!targetSitemapUrl) {
+            const protocol = site.domain.startsWith('http') ? '' : 'https://';
+            targetSitemapUrl = `${protocol}${site.domain}/sitemap.xml`;
         }
-    } catch (e) {
-        console.error("Failed to fetch sitemap", e);
+
+        try {
+            const xmlRes = await fetch(targetSitemapUrl);
+            if (xmlRes.ok) {
+                const xmlText = await xmlRes.text();
+                const parser = new XMLParser();
+                const xmlObj = parser.parse(xmlText);
+                
+                if (xmlObj.urlset && xmlObj.urlset.url) {
+                    const urlList = Array.isArray(xmlObj.urlset.url) ? xmlObj.urlset.url : [xmlObj.urlset.url];
+                    const locs = urlList.map((u: any) => u.loc).filter(Boolean);
+                    allUrls.push(...locs);
+                } else if (xmlObj.sitemapindex && xmlObj.sitemapindex.sitemap) {
+                     console.warn("Sitemap index found. Recursive fetching not yet fully supported inline.");
+                     // Optionally fetch first level
+                     const sitemapList = Array.isArray(xmlObj.sitemapindex.sitemap) ? xmlObj.sitemapindex.sitemap : [xmlObj.sitemapindex.sitemap];
+                     // Logic to handle sitemap index could be added here
+                }
+            }
+        } catch (e) {
+            console.error("Failed to fetch sitemap", e);
+        }
     }
     
     if (allUrls.length === 0) {

@@ -3,7 +3,7 @@
 export interface BacklinkSource {
   name: string;
   url: string;
-  type: "Directory" | "Guest Post" | "Community" | "Social";
+  type: "Directory" | "Guest Post" | "Community" | "Social" | "Profile";
   da: number;
   score: number;
   priority: "High" | "Medium" | "Low";
@@ -222,5 +222,88 @@ export const backlinkSources: BacklinkSource[] = [
     score: 85,
     priority: "Medium",
     description: "Q&A platform, good for long-tail traffic.",
+  },
+  
+  // Profile Creation
+  {
+    name: "About.me",
+    url: "https://about.me/",
+    type: "Profile",
+    da: 92,
+    score: 88,
+    priority: "High",
+    description: "Create a personal homepage and link to your site.",
+  },
+  {
+    name: "Behance",
+    url: "https://www.behance.net/",
+    type: "Profile",
+    da: 96,
+    score: 94,
+    priority: "High",
+    description: "Showcase creative work and get a high DA backlink.",
+  },
+  {
+    name: "GitHub",
+    url: "https://github.com/",
+    type: "Profile",
+    da: 96,
+    score: 95,
+    priority: "High",
+    description: "Essential for developers, high authority profile link.",
+  },
+  {
+    name: "Gravatar",
+    url: "https://en.gravatar.com/",
+    type: "Profile",
+    da: 94,
+    score: 90,
+    priority: "High",
+    description: "Globally recognized avatar profile.",
+  },
+  {
+    name: "Ted.com",
+    url: "https://www.ted.com/",
+    type: "Profile",
+    da: 93,
+    score: 89,
+    priority: "Medium",
+    description: "Create a profile on the TED community.",
+  },
+  {
+    name: "Issuu",
+    url: "https://issuu.com/",
+    type: "Profile",
+    da: 94,
+    score: 85,
+    priority: "Medium",
+    description: "Digital publishing platform.",
+  },
+  {
+    name: "Wattpad",
+    url: "https://www.wattpad.com/",
+    type: "Profile",
+    da: 92,
+    score: 80,
+    priority: "Medium",
+    description: "Storytelling platform with profile links.",
+  },
+  {
+    name: "Goodreads",
+    url: "https://www.goodreads.com/",
+    type: "Profile",
+    da: 93,
+    score: 85,
+    priority: "Medium",
+    description: "Book review site tailored for authors and readers.",
+  },
+  {
+    name: "Dribbble",
+    url: "https://dribbble.com/",
+    type: "Profile",
+    da: 93,
+    score: 90,
+    priority: "High",
+    description: "Design portfolio platform.",
   }
 ];

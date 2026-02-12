@@ -151,3 +151,45 @@ export async function disconnectGSC() {
 
   return { success: true };
 }
+
+export async function fetchGSCSitemaps(siteUrl: string) {
+  const user = await stackServerApp.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  try {
+    const accessToken = await getValidAccessToken(user.id);
+    
+    if (!accessToken) {
+      return { error: "not_connected", needsAuth: true };
+    }
+
+    // Fetch sitemaps from Google Search Console API
+    const encodedSiteUrl = encodeURIComponent(siteUrl);
+    const response = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${encodedSiteUrl}/sitemaps`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        return { error: "token_expired", needsAuth: true };
+      }
+      // 403 or 404 common if site not verified yet or no sitemaps
+      if (response.status === 404) {
+          return { sitemap: [] };
+      }
+      throw new Error(`GSC API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    return {
+      sitemaps: data.sitemap || [],
+    };
+  } catch (error) {
+    console.error('Error fetching GSC sitemaps:', error);
+    return { error: "fetch_failed" };
+  }
+}

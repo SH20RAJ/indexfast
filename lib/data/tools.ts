@@ -1,7 +1,7 @@
 export interface Tool {
   name: string;
   url: string;
-  category: "SEO" | "Marketing" | "Analytics" | "CRM" | "Design" | "Other" | "Internal";
+  category: "SEO" | "Marketing" | "Analytics" | "CRM" | "Design" | "Sitemap" | "Aggregator" | "Other" | "Internal";
   pricing: "Free" | "Freemium" | "Paid";
   da: number;
   score: number;
@@ -23,7 +23,7 @@ export const seoMarketingTools: Tool[] = [
     description: "Our own internal analytics dashboard for tracking performance.",
   },
   {
-    name: "Placer Sites",
+    name: "IndexFast Sites",
     url: "/dashboard/sites",
     category: "Internal",
     pricing: "Free",
@@ -188,4 +188,88 @@ export const seoMarketingTools: Tool[] = [
     priority: "High",
     description: "Interface design tool.",
   },
+
+  // Sitemap Tools
+  {
+    name: "XML-Sitemaps.com",
+    url: "https://www.xml-sitemaps.com/",
+    category: "Sitemap",
+    pricing: "Freemium",
+    da: 85,
+    score: 95,
+    priority: "High",
+    description: "Popluar online sitemap generator and validator.",
+  },
+  {
+    name: "Slickplan",
+    url: "https://slickplan.com/",
+    category: "Sitemap",
+    pricing: "Paid",
+    da: 75,
+    score: 88,
+    priority: "Medium",
+    description: "Visual sitemap builder for planning website architecture.",
+  },
+  {
+    name: "Sitechecker Sitemap Validator",
+    url: "https://sitechecker.pro/sitemap-validator/",
+    category: "Sitemap",
+    pricing: "Freemium",
+    da: 78,
+    score: 90,
+    priority: "High",
+    description: "Check your XML sitemap for errors.",
+  },
+  {
+    name: "SEOptimer Sitemap Generator",
+    url: "https://www.seoptimer.com/sitemap-generator",
+    category: "Sitemap",
+    pricing: "Free",
+    da: 82,
+    score: 89,
+    priority: "Medium",
+    description: "Free tool to generate XML sitemaps.",
+  },
+
+  // SEO Tool Aggregators
+  {
+    name: "SmallSEOTools",
+    url: "https://smallseotools.com/",
+    category: "Aggregator",
+    pricing: "Free",
+    da: 88,
+    score: 92,
+    priority: "High",
+    description: "Huge collection of free SEO and text tools.",
+  },
+  {
+    name: "Duplichecker",
+    url: "https://www.duplichecker.com/",
+    category: "Aggregator",
+    pricing: "Free",
+    da: 86,
+    score: 90,
+    priority: "High",
+    description: "Plagiarism checker and SEO tool suite.",
+  },
+  {
+    name: "PrePostSEO",
+    url: "https://www.prepostseo.com/",
+    category: "Aggregator",
+    pricing: "Freemium",
+    da: 84,
+    score: 88,
+    priority: "Medium",
+    description: "175+ free SEO and writing tools.",
+  },
+  {
+    name: "SEO Review Tools",
+    url: "https://www.seoreviewtools.com/",
+    category: "Aggregator",
+    pricing: "Free",
+    da: 79,
+    score: 87,
+    priority: "Medium",
+    description: "Over 60 real-time SEO tools.",
+  }
 ];

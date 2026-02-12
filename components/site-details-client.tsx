@@ -6,6 +6,7 @@ import { CreativeCard } from "@/components/ui/creative-card";
 import { Loader2, RefreshCw, ToggleLeft, ToggleRight, Trash2, ExternalLink, Check, AlertCircle } from "lucide-react";
 import { toggleAutoIndex } from "@/app/actions/dashboard";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function SiteDetailsClient({ site, stats }: { site: any, stats: any }) {
     const router = useRouter();
@@ -21,14 +22,14 @@ export default function SiteDetailsClient({ site, stats }: { site: any, stats: a
             });
             const result = await res.json() as any;
             if (result.success) {
-                alert(`Synced! Processed: ${result.processed}, Submitted: ${result.submitted}`);
+                toast.success(`Synced! Processed: ${result.processed}, Submitted: ${result.submitted}`);
                 router.refresh();
             } else {
-                alert("Sync failed: " + (result.message || result.error || "Unknown error"));
+                toast.error("Sync failed", { description: result.message || result.error || "Unknown error" });
             }
         } catch (e) {
             console.error(e);
-            alert("Sync failed");
+            toast.error("Sync failed");
         }
         setActioning(null);
     };
@@ -39,16 +40,21 @@ export default function SiteDetailsClient({ site, stats }: { site: any, stats: a
             setAutoIndex(newState); // Optimistic update
             await toggleAutoIndex(site.id, newState);
             router.refresh();
+            toast.success(newState ? "Auto-indexing enabled" : "Auto-indexing disabled");
         } catch (e: any) {
             console.error(e);
             setAutoIndex(!autoIndex); // Revert
             
              if (e.message?.includes("requires the pro plan") || e.digest?.includes("requires the pro plan")) {
-                if (confirm("Auto-indexing is a Pro feature. Would you like to upgrade now?")) {
-                    window.location.href = "/dashboard/billing";
-                }
+                toast.error("Auto-indexing requires Pro", {
+                    description: "Unlock auto-indexing with the Pro plan.",
+                    action: {
+                        label: "Upgrade",
+                        onClick: () => router.push("/dashboard/billing")
+                    }
+                });
             } else {
-                alert("Failed to toggle auto-index: " + (e.message || "Unknown error"));
+                toast.error("Failed to toggle auto-index", { description: e.message });
             }
         }
     };

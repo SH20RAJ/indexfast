@@ -56,6 +56,18 @@ export const sites = pgTable('sites', {
     unq: unique().on(t.userId, t.gscSiteUrl),
 }));
 
+export const sitemaps = pgTable('sitemaps', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  siteId: uuid('site_id').references(() => sites.id, { onDelete: 'cascade' }).notNull(),
+  url: text('url').notNull(),
+  lastCrawled: timestamp('last_crawled'),
+  urlsCount: integer('urls_count').default(0),
+  isEnabled: boolean('is_enabled').default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (t) => ({
+    unq: unique().on(t.siteId, t.url),
+}));
+
 export const submissions = pgTable('submissions', {
   id: uuid('id').defaultRandom().primaryKey(),
   siteId: uuid('site_id').references(() => sites.id, { onDelete: 'cascade' }).notNull(),

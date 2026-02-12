@@ -5,6 +5,7 @@ import { CreativeButton } from "@/components/ui/creative-button";
 import { CreativeCard } from "@/components/ui/creative-card";
 import { Loader2, Plus, Check, RefreshCw, AlertCircle, ToggleLeft, ToggleRight, Globe, X } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { saveSite, toggleAutoIndex } from "@/app/actions/dashboard";
 
 interface ImportedSite {
@@ -32,6 +33,7 @@ export default function SitesManager({ initialSites }: { initialSites: any[] }) 
     setActioning(null);
   };
 
+
   const handleSync = async (siteUrl: string) => {
     setActioning(siteUrl);
     try {
@@ -41,15 +43,13 @@ export default function SitesManager({ initialSites }: { initialSites: any[] }) 
       });
       const result = await res.json() as any;
       if (result.success) {
-        alert(
-          `Synced! Processed: ${result.processed}, Submitted: ${result.submitted}`,
-        );
+        toast.success(`Synced! Processed: ${result.processed}, Submitted: ${result.submitted}`);
       } else {
-        alert("Sync failed: " + (result.message || result.error || "Unknown error"));
+        toast.error("Sync failed", { description: result.message || result.error || "Unknown error" });
       }
     } catch (e) {
       console.error(e);
-      alert("Sync failed");
+      toast.error("Sync failed");
     }
     setActioning(null);
   };
@@ -59,17 +59,22 @@ export default function SitesManager({ initialSites }: { initialSites: any[] }) 
           const newState = !site.autoIndex;
           setImportedSites(prev => prev.map(s => s.id === site.id ? { ...s, autoIndex: newState } : s));
           await toggleAutoIndex(site.id, newState);
+          toast.success(newState ? "Auto-indexing enabled" : "Auto-indexing disabled");
       } catch (e: any) {
           console.error(e);
           // Revert state
           setImportedSites(prev => prev.map(s => s.id === site.id ? { ...s, autoIndex: !site.autoIndex } : s));
           
           if (e.message?.includes("requires the pro plan") || e.digest?.includes("requires the pro plan")) {
-              if (confirm("Auto-indexing is a Pro feature. Would you like to upgrade now?")) {
-                  window.location.href = "/dashboard/billing";
-              }
+                toast.error("Auto-indexing requires Pro", {
+                    description: "Unlock auto-indexing with the Pro plan.",
+                    action: {
+                        label: "Upgrade",
+                        onClick: () => window.location.href = "/dashboard/billing"
+                    }
+                });
           } else {
-              alert("Failed to toggle auto-index: " + (e.message || "Unknown error"));
+              toast.error("Failed to toggle auto-index", { description: e.message || "Unknown error" });
           }
       }
   }

@@ -15,3 +15,7 @@ curl https://api.openai.com/v1/chat/completions \
   create a tab on dashboard where listed tools 3rd party and own for seo and marketing and other things with priority and domain authority and score and well separated 
 
   do research on internet before adding both tabs, well structured 
+
+
+
+  do more reseach on internet and add more to http://localhost:3000/dashboard/backlinks and http://localhost:3000/dashboard/tools (also add sitemap generator tools, sitemap validator and all types of tools and agrigator website urls collection like smallseotool do well research )
