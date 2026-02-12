@@ -5,7 +5,9 @@
  * Never expose this to the client - API key must remain secure
  */
 
-const DODO_API_BASE = 'https://api.dodopayments.com/v1';
+const DODO_API_BASE = process.env.NODE_ENV === 'production' 
+  ? 'https://live.dodopayments.com' 
+  : 'https://test.dodopayments.com';
 
 export interface DodoCustomer {
   customer_id: string;

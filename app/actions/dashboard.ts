@@ -258,7 +258,7 @@ export async function getSiteDetails(domain: string) {
             .where(
                 and(
                     eq(submissions.siteId, site.id),
-                    sql`${submissions.submittedAt} >= ${thirtyDaysAgo}`
+                    sql`${submissions.submittedAt} >= ${thirtyDaysAgo.toISOString()}`
                 )
             );
 
