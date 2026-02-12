@@ -33,6 +33,10 @@ export async function POST(request: Request) {
   const { siteUrl } = await request.json() as { siteUrl: string }
 
   try {
+    if (!siteUrl) {
+        return NextResponse.json({ error: 'Missing siteUrl' }, { status: 400 });
+    }
+
     // 1. Initial Access Check
     // We don't know credits yet as we haven't fetched sitemap, but let's at least check user existence
     const { allowed, user, error } = await enforcePlanLimits();
