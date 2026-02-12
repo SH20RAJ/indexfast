@@ -58,9 +58,18 @@ export default function SitesManager({ initialSites }: { initialSites: any[] }) 
           const newState = !site.autoIndex;
           setImportedSites(prev => prev.map(s => s.id === site.id ? { ...s, autoIndex: newState } : s));
           await toggleAutoIndex(site.id, newState);
-      } catch (e) {
+      } catch (e: any) {
           console.error(e);
-           setImportedSites(prev => prev.map(s => s.id === site.id ? { ...s, autoIndex: !site.autoIndex } : s));
+          // Revert state
+          setImportedSites(prev => prev.map(s => s.id === site.id ? { ...s, autoIndex: !site.autoIndex } : s));
+          
+          if (e.message?.includes("requires the pro plan") || e.digest?.includes("requires the pro plan")) {
+              if (confirm("Auto-indexing is a Pro feature. Would you like to upgrade now?")) {
+                  window.location.href = "/dashboard/billing";
+              }
+          } else {
+              alert("Failed to toggle auto-index: " + (e.message || "Unknown error"));
+          }
       }
   }
 
