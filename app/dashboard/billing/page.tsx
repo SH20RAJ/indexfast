@@ -1,8 +1,17 @@
-"use server";
+
 
 import { redirect } from "next/navigation";
 import { getBillingData } from "@/app/actions/billing";
 import { BillingClient } from "./client";
+
+import { Metadata } from "next";
+import baseMetadata from "@/lib/metadata";
+
+export const metadata: Metadata = {
+  ...baseMetadata,
+  title: "Billing",
+  description: "Manage your subscription and billing.",
+};
 
 export default async function BillingPage() {
   const data = await getBillingData();

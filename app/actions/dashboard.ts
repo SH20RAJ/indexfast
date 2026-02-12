@@ -226,6 +226,52 @@ export async function importGSCSites(sitesToImport: { domain: string, siteUrl: s
         return { success: true, count: sitesToImport.length };
     } catch (error) {
         console.error("Import GSC Sites Error:", error);
-        throw error;
+    }
+}
+
+export async function getSiteDetails(domain: string) {
+    const user = await stackServerApp.getUser();
+    if (!user) return null;
+
+    try {
+        // Fetch site by domain and user
+        const site = await db.query.sites.findFirst({
+            where: and(eq(sites.domain, domain), eq(sites.userId, user.id))
+        });
+
+        if (!site) return null;
+
+        // Fetch recent submissions for this site
+        const recentSubmissions = await db.select()
+            .from(submissions)
+            .where(eq(submissions.siteId, site.id))
+            .orderBy(desc(submissions.submittedAt))
+            .limit(50);
+
+        // Fetch usage stats (count of submissions in last 30 days)
+        // This is a bit rough, better to aggregate usage_logs if possible, but submissions table works for now
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        const monthlySubmissionsCount = await db.select({ count: sql<number>`count(*)` })
+            .from(submissions)
+            .where(
+                and(
+                    eq(submissions.siteId, site.id),
+                    sql`${submissions.submittedAt} >= ${thirtyDaysAgo}`
+                )
+            );
+
+        return {
+            site,
+            submissions: recentSubmissions,
+            stats: {
+                totalSubmissions: monthlySubmissionsCount[0]?.count || 0
+            }
+        };
+
+    } catch (error) {
+        console.error("Get Site Details Error:", error);
+        return null;
     }
 }

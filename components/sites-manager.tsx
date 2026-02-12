@@ -4,11 +4,12 @@ import { useState } from "react";
 import { CreativeButton } from "@/components/ui/creative-button";
 import { CreativeCard } from "@/components/ui/creative-card";
 import { Loader2, Plus, Check, RefreshCw, AlertCircle, ToggleLeft, ToggleRight, Globe, X } from "lucide-react";
+import Link from "next/link";
 import { saveSite, toggleAutoIndex } from "@/app/actions/dashboard";
 
 interface ImportedSite {
   id: string;
-  gsc_site_url: string;
+  gscSiteUrl: string;
   domain: string;
   isVerified: boolean;
   autoIndex: boolean;
@@ -97,7 +98,7 @@ export default function SitesManager({ initialSites }: { initialSites: any[] }) 
           const { importGSCSites } = await import("@/app/actions/dashboard");
           const result = await importGSCSites(sitesToImport);
           
-          if (result.success) {
+          if (result?.success) {
               // Refresh the list of sites
               // In a real app we might want to re-fetch from server or optimistically update.
               // For now, let's just reload the page to be safe and simple or update local state if we had full objects.
@@ -169,7 +170,9 @@ export default function SitesManager({ initialSites }: { initialSites: any[] }) 
             <CreativeCard key={site.id} className="flex flex-col h-full bg-card relative overflow-hidden group">
                  <div className="flex justify-between items-start gap-2 mb-4">
                     <h3 className="truncate text-lg font-bold font-handwritten flex-1" title={site.domain}>
-                        {site.domain}
+                        <Link href={`/dashboard/sites/${site.domain}`} className="hover:underline">
+                            {site.domain}
+                        </Link>
                     </h3>
                     <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold border ${
                         site.isVerified 
@@ -194,10 +197,10 @@ export default function SitesManager({ initialSites }: { initialSites: any[] }) 
                  <CreativeButton
                     variant="primary"
                     className="w-full"
-                    onClick={() => handleSync(site.gsc_site_url)}
-                    disabled={actioning === site.gsc_site_url || actioning === 'import'}
+                    onClick={() => handleSync(site.gscSiteUrl)}
+                    disabled={actioning === site.gscSiteUrl || actioning === 'import'}
                 >
-                    {actioning === site.gsc_site_url ? (
+                    {actioning === site.gscSiteUrl ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                     <RefreshCw className="mr-2 h-4 w-4" />
@@ -290,7 +293,7 @@ export default function SitesManager({ initialSites }: { initialSites: any[] }) 
                                     ) : (
                                         gscSites.map((site) => {
                                             const isSelected = selectedGscSites.includes(site.siteUrl);
-                                            const isAlreadyImported = importedSites.some(s => s.gsc_site_url === site.siteUrl);
+                                            const isAlreadyImported = importedSites.some(s => s.gscSiteUrl === site.siteUrl);
                                             
                                             // Extract domain for display
                                             const domainDisplay = site.siteUrl.replace("sc-domain:", "").replace("https://", "").replace("http://", "").replace(/\/$/, "");

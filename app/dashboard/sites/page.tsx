@@ -1,6 +1,15 @@
 import SitesManager from "@/components/sites-manager";
 import { getDashboardData } from "@/app/actions/dashboard";
 
+import { Metadata } from "next";
+import baseMetadata from "@/lib/metadata";
+
+export const metadata: Metadata = {
+  ...baseMetadata,
+  title: "Sites",
+  description: "Manage your connected properties.",
+};
+
 export default async function SitesPage() {
   const data = await getDashboardData();
   const sites = data?.sites || [];

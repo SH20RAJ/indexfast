@@ -1,3 +1,12 @@
+import { Metadata } from "next";
+import baseMetadata from "@/lib/metadata";
+
+export const metadata: Metadata = {
+  ...baseMetadata,
+  title: "Analytics",
+  description: "View your indexing performance.",
+};
+
 export default function AnalyticsPage() {
   return (
     <div className="space-y-6">
