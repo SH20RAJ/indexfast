@@ -43,10 +43,11 @@ export const usageLogs = pgTable('usage_logs', {
 
 export const sites = pgTable('sites', {
   id: uuid('id').defaultRandom().primaryKey(),
-  userId: text('user_id').notNull(), // Intentionally not referencing users.id yet to allow sites for anon/unmigrated users if needed, or link later. Ideally should ref users.id.
+  userId: text('user_id').notNull(),
   domain: text('domain').notNull(),
-  gscSiteUrl: text('gsc_site_url').notNull(),
+  gscSiteUrl: text('gsc_site_url').notNull(), // The actual ID from GSC (sc-domain: or https://)
   permissionLevel: text('permission_level').default('siteOwner'),
+  sitemapCount: integer('sitemap_count').default(0),
   isVerified: boolean('is_verified').default(false).notNull(),
   autoIndex: boolean('auto_index').default(false).notNull(),
   lastSyncAt: timestamp('last_sync_at'),

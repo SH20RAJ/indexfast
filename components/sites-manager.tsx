@@ -69,6 +69,39 @@ export default function SitesManager({ initialSites }: { initialSites: any[] }) 
   const [loadingGSC, setLoadingGSC] = useState(false);
   const [gscConnected, setGscConnected] = useState(false);
   const [needsAuth, setNeedsAuth] = useState(false);
+  const [selectedGscSites, setSelectedGscSites] = useState<string[]>([]);
+  const [bulkImporting, setBulkImporting] = useState(false);
+
+  const handleBulkImport = async () => {
+      if (selectedGscSites.length === 0) return;
+      setBulkImporting(true);
+      
+      try {
+          const sitesToImport = gscSites
+              .filter(s => selectedGscSites.includes(s.siteUrl))
+              .map(s => ({
+                  domain: s.siteUrl.replace("sc-domain:", "").replace("https://", "").replace("http://", "").replace(/\/$/, ""),
+                  siteUrl: s.siteUrl,
+                  permissionLevel: s.permissionLevel
+              }));
+          
+          const { importGSCSites } = await import("@/app/actions/dashboard");
+          const result = await importGSCSites(sitesToImport);
+          
+          if (result.success) {
+              // Refresh the list of sites
+              // In a real app we might want to re-fetch from server or optimistically update.
+              // For now, let's just reload the page to be safe and simple or update local state if we had full objects.
+              // Let's toggle a reload
+              window.location.reload(); 
+          }
+      } catch (e) {
+          console.error("Bulk import failed", e);
+          alert("Failed to import selected sites.");
+      }
+      setBulkImporting(false);
+      setShowGSCModal(false);
+  };
   
   const openGSCModal = async () => {
       setShowGSCModal(true);
@@ -180,46 +213,144 @@ export default function SitesManager({ initialSites }: { initialSites: any[] }) 
         )}
         </div>
         
-        {/* Simple Modal for GSC Sites */}
+        {/* Enhanced GSC Modal with Multi-Select */}
         {showGSCModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-                <div className="bg-card border rounded-lg shadow-lg max-w-md w-full max-h-[80vh] flex flex-col">
-                    <div className="p-4 border-b flex justify-between items-center">
-                        <h3 className="font-bold text-lg">Select GSC Property</h3>
-                        <button onClick={() => setShowGSCModal(false)}><X className="w-5 h-5" /></button>
+                <div className="bg-card border rounded-lg shadow-lg max-w-2xl w-full max-h-[85vh] flex flex-col">
+                    <div className="p-4 border-b flex justify-between items-center bg-muted/30">
+                        <div>
+                            <h3 className="font-bold text-lg">Import from Google Search Console</h3>
+                            <p className="text-sm text-muted-foreground">Select sites to import into IndexFast</p>
+                        </div>
+                        <button onClick={() => setShowGSCModal(false)} className="p-1 hover:bg-muted rounded-full"><X className="w-5 h-5" /></button>
                     </div>
-                    <div className="p-4 overflow-y-auto flex-1">
+                    
+                    <div className="p-0 overflow-hidden flex-1 flex flex-col">
                         {loadingGSC ? (
-                            <div className="flex justify-center py-8"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
+                            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                                <Loader2 className="w-8 h-8 animate-spin text-brand" />
+                                <p className="text-muted-foreground animate-pulse">Fetching your sites from Google...</p>
+                            </div>
                         ) : needsAuth ? (
-                            <div className="text-center py-8 space-y-4">
-                                <Globe className="w-12 h-12 mx-auto text-muted-foreground" />
-                                <p className="text-muted-foreground">
-                                    Connect your Google Search Console to import sites
-                                </p>
-                                <CreativeButton onClick={handleConnectGSC} variant="primary">
+                            <div className="text-center py-12 px-6 space-y-6 flex flex-col items-center justify-center h-full">
+                                <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center">
+                                    <Globe className="w-8 h-8 text-blue-500" />
+                                </div>
+                                <div className="space-y-2">
+                                    <h4 className="text-xl font-bold">Connect Google Search Console</h4>
+                                    <p className="text-muted-foreground max-w-sm mx-auto">
+                                        Link your Google account to automatically import verified sites and sync sitemaps.
+                                    </p>
+                                </div>
+                                <CreativeButton onClick={handleConnectGSC} variant="primary" size="lg" className="w-full max-w-xs">
+                                    <Globe className="w-4 h-4 mr-2" />
                                     Connect Google Account
                                 </CreativeButton>
                             </div>
                         ) : (
-                            <div className="space-y-2">
-                                {gscSites.map((site) => (
-                                    <button
-                                        key={site.siteUrl}
-                                        className="w-full text-left p-3 hover:bg-muted rounded-md border flex items-center justify-between group"
-                                        onClick={() => {
-                                            // Handle import
-                                            const domain = site.siteUrl.replace("sc-domain:", "").replace("https://", "").replace("http://", "").replace(/\/$/, "");
-                                            handleImport(domain);
-                                            setShowGSCModal(false);
-                                        }}
+                            <>
+                                <div className="p-3 border-b bg-muted/20 flex items-center justify-between sticky top-0 backdrop-blur-sm z-10">
+                                    <div className="flex items-center space-x-2">
+                                        <input 
+                                            type="checkbox" 
+                                            id="selectAll"
+                                            className="rounded border-gray-300 text-brand focus:ring-brand"
+                                            checked={gscSites.length > 0 && selectedGscSites.length === gscSites.length}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setSelectedGscSites(gscSites.map(s => s.siteUrl));
+                                                } else {
+                                                    setSelectedGscSites([]);
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor="selectAll" className="text-sm font-medium cursor-pointer select-none">
+                                            Select All ({gscSites.length})
+                                        </label>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">
+                                        {selectedGscSites.length} selected
+                                    </span>
+                                </div>
+
+                                <div className="overflow-y-auto flex-1 p-2 space-y-1">
+                                    {gscSites.length === 0 ? (
+                                        <div className="text-center py-12 text-muted-foreground">
+                                            No verified sites found in your Google Search Console account.
+                                        </div>
+                                    ) : (
+                                        gscSites.map((site) => {
+                                            const isSelected = selectedGscSites.includes(site.siteUrl);
+                                            const isAlreadyImported = importedSites.some(s => s.gsc_site_url === site.siteUrl);
+                                            
+                                            // Extract domain for display
+                                            const domainDisplay = site.siteUrl.replace("sc-domain:", "").replace("https://", "").replace("http://", "").replace(/\/$/, "");
+
+                                            return (
+                                                <div 
+                                                    key={site.siteUrl}
+                                                    onClick={() => {
+                                                        if (isAlreadyImported) return;
+                                                        if (isSelected) {
+                                                            setSelectedGscSites(prev => prev.filter(url => url !== site.siteUrl));
+                                                        } else {
+                                                            setSelectedGscSites(prev => [...prev, site.siteUrl]);
+                                                        }
+                                                    }}
+                                                    className={`
+                                                        w-full text-left p-3 rounded-md border flex items-center justify-between group transition-all cursor-pointer select-none
+                                                        ${isAlreadyImported ? 'bg-muted/50 opacity-60 cursor-not-allowed border-transparent' : 
+                                                          isSelected ? 'bg-brand/5 border-brand ring-1 ring-brand' : 'hover:bg-muted border-transparent hover:border-border'}
+                                                    `}
+                                                >
+                                                    <div className="flex items-center space-x-3 overflow-hidden">
+                                                        <div className={`
+                                                            w-5 h-5 rounded border flex items-center justify-center transition-colors
+                                                            ${isSelected || isAlreadyImported ? 'bg-brand border-brand text-white' : 'border-input bg-background'}
+                                                        `}>
+                                                            {(isSelected || isAlreadyImported) && <Check className="w-3.5 h-3.5" />}
+                                                        </div>
+                                                        <div className="flex flex-col overflow-hidden">
+                                                            <span className="truncate font-bold text-sm">{domainDisplay}</span>
+                                                            <span className="truncate text-xs text-muted-foreground">{site.siteUrl}</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {isAlreadyImported ? (
+                                                        <span className="text-xs px-2 py-0.5 bg-muted rounded text-muted-foreground font-medium">Imported</span>
+                                                    ) : (
+                                                        <div className="text-xs text-muted-foreground">{site.permissionLevel}</div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+
+                                <div className="p-4 border-t bg-background mt-auto">
+                                    <CreativeButton 
+                                        onClick={handleBulkImport} 
+                                        disabled={selectedGscSites.length === 0 || bulkImporting}
+                                        className="w-full"
+                                        size="lg"
                                     >
-                                        <span className="truncate font-medium">{site.siteUrl}</span>
-                                        <Plus className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </button>
-                                ))}
-                                {gscSites.length === 0 && <p className="text-center text-muted-foreground">No sites found.</p>}
-                            </div>
+                                        {bulkImporting ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                Importing {selectedGscSites.length} sites...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Plus className="w-4 h-4 mr-2" />
+                                                Import {selectedGscSites.length} Selected Sites
+                                            </>
+                                        )}
+                                    </CreativeButton>
+                                    <p className="text-center text-xs text-muted-foreground mt-2">
+                                        Importing will automatically verified sites and enable sitemap syncing.
+                                    </p>
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>

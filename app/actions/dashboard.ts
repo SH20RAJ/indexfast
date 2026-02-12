@@ -175,21 +175,6 @@ export async function toggleAutoIndex(siteId: string, enabled: boolean) {
         const { allowed, error, user } = await guard.enforcePlanLimits({ requiredPlan: 'pro', featureName: 'Auto-indexing' });
         
         if (!allowed || !user) throw new Error(error || "Unauthorized");
-
-        /* Old check removed */ 
-
-        const site = await db.query.sites.findFirst({
-            where: (fields, { eq, and }) => and(eq(fields.id, siteId), eq(fields.userId, user.id))
-        });
-        // Better:
-        /*
-        await db.update(sites)
-           .set({ autoIndex: enabled })
-           .where(and(eq(sites.id, siteId), eq(sites.userId, user.id)));
-        */
-       // Since I didn't import 'and', let's stick to simple ID update but checking ownership is crucial.
-       // Let's rely on the fact that site UUIDs are hard to guess, but for prod we must fix.
-       // I'll add specific check.
        
        const site = await db.query.sites.findFirst({
            where: (fields, { eq, and }) => and(eq(fields.id, siteId), eq(fields.userId, user.id))
@@ -210,3 +195,37 @@ export async function toggleAutoIndex(siteId: string, enabled: boolean) {
 }
 
 // fetchGSCSites has been moved to app/actions/gsc.ts for better organization
+
+export async function importGSCSites(sitesToImport: { domain: string, siteUrl: string, permissionLevel: string }[]) {
+    const user = await stackServerApp.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    try {
+        const dbUser = await getOrCreateUser(user);
+        if (!dbUser) throw new Error("User not found");
+
+        const ops = sitesToImport.map(site => {
+            return db.insert(sites).values({
+                userId: user.id,
+                domain: site.domain,
+                gscSiteUrl: site.siteUrl,
+                permissionLevel: site.permissionLevel,
+                isVerified: true, // Assumed verified since coming from GSC
+                // sitemapCount: 0 // Default, will be updated by sync
+            }).onConflictDoUpdate({
+                target: [sites.userId, sites.gscSiteUrl],
+                set: { 
+                    domain: site.domain,
+                    permissionLevel: site.permissionLevel,
+                    isVerified: true
+                }
+            });
+        });
+
+        await Promise.all(ops);
+        return { success: true, count: sitesToImport.length };
+    } catch (error) {
+        console.error("Import GSC Sites Error:", error);
+        throw error;
+    }
+}

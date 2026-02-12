@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Settings, Globe, BarChart3, Menu, X, CreditCard, ChevronLeft } from "lucide-react";
+import { LayoutDashboard, Settings, Globe, BarChart3, Menu, X, CreditCard, ChevronLeft, Link2, Wrench } from "lucide-react";
 import { useState } from "react";
 import { ModeToggle } from "@/components/mode-toggle";
 
@@ -22,6 +22,16 @@ const sidebarItems = [
     title: "Analytics",
     href: "/dashboard/analytics",
     icon: BarChart3,
+  },
+  {
+    title: "Backlinks",
+    href: "/dashboard/backlinks",
+    icon: Link2,
+  },
+  {
+    title: "Tools",
+    href: "/dashboard/tools",
+    icon: Wrench,
   },
   {
     title: "Billing",
