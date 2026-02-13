@@ -52,11 +52,27 @@ export async function getDashboardData() {
     const dbUser = await getOrCreateUser(stackUser);
     
     // Fetch sites
-    const userSites = await db
-      .select()
-      .from(sites)
-      .where(eq(sites.userId, stackUser.id))
-      .orderBy(desc(sites.createdAt));
+    let userSites: any[] = [];
+    try {
+      userSites = await db
+        .select()
+        .from(sites)
+        .where(eq(sites.userId, stackUser.id))
+        .orderBy(desc(sites.createdAt));
+    } catch (e: any) {
+      console.error("Error fetching sites:", e);
+      if (e.message?.includes('column "index_now_key" does not exist')) {
+        // Fallback for missing columns during migration
+        userSites = await db.execute(sql`
+          SELECT id, user_id, domain, gsc_site_url, permission_level, sitemap_count, is_verified, auto_index, last_sync_at, created_at 
+          FROM sites 
+          WHERE user_id = ${stackUser.id} 
+          ORDER BY created_at DESC
+        `) as any;
+      } else {
+        throw e;
+      }
+    }
 
     // Fetch submissions
     const userSubmissions = await db
@@ -244,9 +260,26 @@ export async function getSiteDetails(domain: string) {
 
     try {
         // Fetch site by domain and user
-        let site = await db.query.sites.findFirst({
-            where: and(eq(sites.domain, domain), eq(sites.userId, user.id))
-        });
+        let site: any;
+        try {
+            site = await db.query.sites.findFirst({
+                where: and(eq(sites.domain, domain), eq(sites.userId, user.id))
+            });
+        } catch (e: any) {
+            console.error("Error fetching site details:", e);
+            if (e.message?.includes('column "index_now_key" does not exist')) {
+                // Fallback for missing columns during migration
+                const rows = await db.execute(sql`
+                    SELECT id, user_id, domain, gsc_site_url, permission_level, sitemap_count, is_verified, auto_index, last_sync_at, created_at 
+                    FROM sites 
+                    WHERE domain = ${domain} AND user_id = ${user.id} 
+                    LIMIT 1
+                `) as any;
+                site = rows[0];
+            } else {
+                throw e;
+            }
+        }
 
         if (!site) return null;
 
