@@ -72,7 +72,7 @@ This project is configured for Cloudflare Workers using `@opennextjs/cloudflare`
 Based on the brand identity "IndexFast" and the value proposition of speed and SEO:
 
 1. **indexfast.io** - Clean, tech-focused (Top Pick).
-2. **getindexfast.com** - Action-oriented, SEO friendly.
+2. **getindexfast.strivio.world** - Action-oriented, SEO friendly.
 3. **indexnow.pro** - leverages the "IndexNow" protocol name.
 4. **rapidindex.ai** - Modern, implies automation/AI.
 5. **submitfast.app** - Focuses on the utility.

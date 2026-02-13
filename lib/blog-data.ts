@@ -553,7 +553,7 @@ Next.js makes this trivial in the Metadata API.
 \`\`\`typescript
 // app/layout.tsx or page.tsx
 export const metadata: Metadata = {
-  metadataBase: new URL('https://indexfast.com'),
+  metadataBase: new URL('https://indexfast.strivio.world'),
   alternates: {
     canonical: './', // Automatically resolves to the current path
   },

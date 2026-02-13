@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: '/dashboard/',
     },
-    sitemap: 'https://indexfast.com/sitemap.xml',
+    sitemap: 'https://indexfast.strivio.world/sitemap.xml',
   }
 }

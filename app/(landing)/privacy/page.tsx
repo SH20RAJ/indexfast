@@ -58,7 +58,7 @@ export default function PrivacyPage() {
         <p>You have the right to access, update, or delete your personal information. You can manage your account settings or contact us for assistance.</p>
 
         <h2>9. Contact Us</h2>
-        <p>If you have any questions about this Privacy Policy, please contact us at <a href="mailto:privacy@indexfast.com">privacy@indexfast.com</a>.</p>
+        <p>If you have any questions about this Privacy Policy, please contact us at <a href="mailto:privacy@indexfast.strivio.world">privacy@indexfast.strivio.world</a>.</p>
       </div>
     </div>
   )

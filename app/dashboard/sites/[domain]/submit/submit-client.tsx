@@ -116,7 +116,7 @@ export default function SubmitClient({ site }: { site: { id: string; domain: str
         setTimeout(() => setCopied(null), 2000);
     }, []);
 
-    const curlExample = `curl -X POST https://indexfast.com/api/v1/urls/submit \\
+    const curlExample = `curl -X POST https://indexfast.strivio.world/api/v1/urls/submit \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -127,7 +127,7 @@ export default function SubmitClient({ site }: { site: { id: string; domain: str
     "priority": "${priority}"
   }'`;
 
-    const jsExample = `const response = await fetch('https://indexfast.com/api/v1/urls/submit', {
+    const jsExample = `const response = await fetch('https://indexfast.strivio.world/api/v1/urls/submit', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -147,7 +147,7 @@ console.log(data);`;
     const pythonExample = `import requests
 
 response = requests.post(
-    'https://indexfast.com/api/v1/urls/submit',
+    'https://indexfast.strivio.world/api/v1/urls/submit',
     headers={
         'Authorization': 'Bearer YOUR_API_KEY',
         'Content-Type': 'application/json',

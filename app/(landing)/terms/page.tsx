@@ -43,7 +43,7 @@ export default function TermsPage() {
         <p>We reserve the right to modify these terms at any time. We will notify you of significant changes by posting the new terms on this site.</p>
 
         <h2>9. Contact Us</h2>
-        <p>If you have any questions about these Terms, please contact us at <a href="mailto:support@indexfast.com">support@indexfast.com</a>.</p>
+        <p>If you have any questions about these Terms, please contact us at <a href="mailto:support@indexfast.strivio.world">support@indexfast.strivio.world</a>.</p>
       </div>
     </div>
   )

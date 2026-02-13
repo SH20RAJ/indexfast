@@ -47,7 +47,7 @@ function createOgSvg() {
   <!-- Tagline -->
   <text x="420" y="410" font-family="Arial, Helvetica, sans-serif" font-size="32" fill="#a1a1aa">Get indexed in minutes, not weeks.</text>
   <!-- URL -->
-  <text x="420" y="550" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#52525b">indexfast.com</text>
+  <text x="420" y="550" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#52525b">indexfast.strivio.world</text>
 </svg>`;
 }
 
