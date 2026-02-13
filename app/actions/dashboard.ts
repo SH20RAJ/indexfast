@@ -11,6 +11,25 @@ function generateIndexNowKey(): string {
     return globalThis.crypto.randomUUID().replace(/-/g, '');
 }
 
+// Helper to map snake_case DB rows to CamelCase for the UI
+function mapSiteToCamelCase(row: any) {
+    if (!row) return row;
+    return {
+        id: row.id,
+        userId: row.user_id,
+        domain: row.domain,
+        gscSiteUrl: row.gsc_site_url,
+        permissionLevel: row.permission_level,
+        sitemapCount: row.sitemap_count,
+        isVerified: row.is_verified,
+        autoIndex: row.auto_index,
+        indexNowKey: row.index_now_key,
+        indexNowKeyVerified: row.index_now_key_verified,
+        lastSyncAt: row.last_sync_at,
+        createdAt: row.created_at
+    };
+}
+
 async function getOrCreateUser(stackUser: any) {
     if (!stackUser) return null;
 
@@ -63,13 +82,14 @@ export async function getDashboardData() {
       console.error("Error fetching sites:", e);
       if (e.message?.includes('column "index_now_key" does not exist')) {
         // Fallback for missing columns during migration
-        const rows = await db.execute(sql`
+        const rows = (await db.execute(sql`
           SELECT id, user_id, domain, gsc_site_url, permission_level, sitemap_count, is_verified, auto_index, last_sync_at, created_at 
           FROM sites 
           WHERE user_id = ${stackUser.id} 
           ORDER BY created_at DESC
-        `);
-        userSites = Array.isArray(rows) ? rows : (rows as any).rows || [];
+        `)) as any;
+        const resultRows = Array.isArray(rows) ? rows : (rows.rows || []);
+        userSites = resultRows.map(mapSiteToCamelCase);
       } else {
         throw e;
       }
@@ -270,13 +290,14 @@ export async function getSiteDetails(domain: string) {
             console.error("Error fetching site details:", e);
             if (e.message?.includes('column "index_now_key" does not exist')) {
                 // Fallback for missing columns during migration
-                const rows = await db.execute(sql`
+                const rows = (await db.execute(sql`
                     SELECT id, user_id, domain, gsc_site_url, permission_level, sitemap_count, is_verified, auto_index, last_sync_at, created_at 
                     FROM sites 
                     WHERE domain = ${domain} AND user_id = ${user.id} 
                     LIMIT 1
-                `);
-                site = Array.isArray(rows) ? rows[0] : (rows as any).rows?.[0];
+                `)) as any;
+                const resultRows = Array.isArray(rows) ? rows : (rows.rows || []);
+                site = mapSiteToCamelCase(resultRows[0]);
             } else {
                 throw e;
             }
