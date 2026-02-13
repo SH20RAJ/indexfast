@@ -63,12 +63,13 @@ export async function getDashboardData() {
       console.error("Error fetching sites:", e);
       if (e.message?.includes('column "index_now_key" does not exist')) {
         // Fallback for missing columns during migration
-        userSites = await db.execute(sql`
+        const rows = await db.execute(sql`
           SELECT id, user_id, domain, gsc_site_url, permission_level, sitemap_count, is_verified, auto_index, last_sync_at, created_at 
           FROM sites 
           WHERE user_id = ${stackUser.id} 
           ORDER BY created_at DESC
-        `) as any;
+        `);
+        userSites = Array.isArray(rows) ? rows : (rows as any).rows || [];
       } else {
         throw e;
       }
@@ -274,8 +275,8 @@ export async function getSiteDetails(domain: string) {
                     FROM sites 
                     WHERE domain = ${domain} AND user_id = ${user.id} 
                     LIMIT 1
-                `) as any;
-                site = rows[0];
+                `);
+                site = Array.isArray(rows) ? rows[0] : (rows as any).rows?.[0];
             } else {
                 throw e;
             }
@@ -360,7 +361,7 @@ export async function clearSiteHistory(siteId: string) {
         });
         if (!site) throw new Error("Site not found");
 
-        const result = await db.delete(submissions).where(eq(submissions.siteId, siteId));
+        await db.delete(submissions).where(eq(submissions.siteId, siteId));
         return { success: true };
     } catch (error) {
         console.error("Clear History Error:", error);

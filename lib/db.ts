@@ -1,8 +1,17 @@
-import { drizzle } from 'drizzle-orm/vercel-postgres';
-import { sql as vercelSql } from '@vercel/postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 import * as schema from './schema';
 
-// Use Vercel's fetch-based Postgres client (works in Cloudflare Workers)
-const db = drizzle(vercelSql, { schema });
+const connectionString = process.env.DATABASE_URL!;
+
+// Configuration for serverless environments (CF Workers)
+// 'prepare: false' is essential when using transaction mode poolers (Neon/Vercel)
+const client = postgres(connectionString, {
+    ssl: 'require',
+    max: 1, // CF Workers are stateless, keep connections minimal
+    prepare: false 
+});
+
+const db = drizzle(client, { schema });
 
 export default db;
