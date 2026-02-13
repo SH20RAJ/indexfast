@@ -71,8 +71,14 @@ export async function POST(request: NextRequest) {
         });
     }
 
-    // Submit via IndexNow
-    const INDEXNOW_KEY = process.env.INDEXNOW_API_KEY || process.env.INDEXNOW_KEY || "indexfast";
+    // Submit via IndexNow using per-site key
+    const INDEXNOW_KEY = site.indexNowKey;
+    if (!INDEXNOW_KEY) {
+        return NextResponse.json({ 
+            error: "IndexNow key not configured for this site. Go to Site Settings to set it up.",
+            submitted: 0, failed: urls.length, credits_used: 0, credits_remaining: user.credits
+        }, { status: 400 });
+    }
     const results: { url: string; status: number }[] = [];
     let submitted = 0;
     let failed = 0;

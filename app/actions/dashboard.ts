@@ -5,6 +5,12 @@ import db from "@/lib/db";
 import { sites, submissions, users } from "@/lib/schema";
 import { eq, desc, sql, and } from "drizzle-orm";
 
+/** Generate a CF-compatible IndexNow key (32 hex chars) */
+function generateIndexNowKey(): string {
+    // Web Crypto API works on CF Workers, Node, Edge, Bun, Deno
+    return globalThis.crypto.randomUUID().replace(/-/g, '');
+}
+
 async function getOrCreateUser(stackUser: any) {
     if (!stackUser) return null;
 
@@ -93,6 +99,7 @@ export async function saveSite(domain: string) {
         const dbUser = await getOrCreateUser(user);
         if (!dbUser) throw new Error("User not found");
 
+        const indexNowKey = generateIndexNowKey();
         const result = await db
             .insert(sites)
             .values({
@@ -100,7 +107,8 @@ export async function saveSite(domain: string) {
                 domain: domain,
                 gscSiteUrl: domain,
                 permissionLevel: 'siteOwner',
-                isVerified: false, // Default to false until verified
+                isVerified: false,
+                indexNowKey,
             })
             .onConflictDoUpdate({
                 target: [sites.userId, sites.gscSiteUrl],
@@ -205,13 +213,14 @@ export async function importGSCSites(sitesToImport: { domain: string, siteUrl: s
         if (!dbUser) throw new Error("User not found");
 
         const ops = sitesToImport.map(site => {
+            const indexNowKey = generateIndexNowKey();
             return db.insert(sites).values({
                 userId: user.id,
                 domain: site.domain,
                 gscSiteUrl: site.siteUrl,
                 permissionLevel: site.permissionLevel,
-                isVerified: true, // Assumed verified since coming from GSC
-                // sitemapCount: 0 // Default, will be updated by sync
+                isVerified: true,
+                indexNowKey,
             }).onConflictDoUpdate({
                 target: [sites.userId, sites.gscSiteUrl],
                 set: { 
@@ -235,11 +244,18 @@ export async function getSiteDetails(domain: string) {
 
     try {
         // Fetch site by domain and user
-        const site = await db.query.sites.findFirst({
+        let site = await db.query.sites.findFirst({
             where: and(eq(sites.domain, domain), eq(sites.userId, user.id))
         });
 
         if (!site) return null;
+
+        // Auto-backfill IndexNow key for existing sites that don't have one
+        if (!site.indexNowKey) {
+            const newKey = generateIndexNowKey();
+            await db.update(sites).set({ indexNowKey: newKey }).where(eq(sites.id, site.id));
+            site = { ...site, indexNowKey: newKey };
+        }
 
         // Fetch recent submissions for this site
         const recentSubmissions = await db.select()
@@ -315,6 +331,29 @@ export async function clearSiteHistory(siteId: string) {
         return { success: true };
     } catch (error) {
         console.error("Clear History Error:", error);
+        return { success: false, error: (error as Error).message };
+    }
+}
+
+export async function regenerateIndexNowKey(siteId: string) {
+    const user = await stackServerApp.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    try {
+        const site = await db.query.sites.findFirst({
+            where: and(eq(sites.id, siteId), eq(sites.userId, user.id))
+        });
+        if (!site) throw new Error("Site not found");
+
+        const newKey = generateIndexNowKey();
+        await db.update(sites).set({ 
+            indexNowKey: newKey, 
+            indexNowKeyVerified: false 
+        }).where(eq(sites.id, siteId));
+
+        return { success: true, key: newKey };
+    } catch (error) {
+        console.error("Regenerate IndexNow Key Error:", error);
         return { success: false, error: (error as Error).message };
     }
 }

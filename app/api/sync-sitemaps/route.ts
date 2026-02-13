@@ -134,7 +134,13 @@ export async function POST(request: Request) {
     }
 
     // 5. Submit to IndexNow
-    const indexNowKey = "435967000af447608269550307049386"; 
+    const indexNowKey = site.indexNowKey;
+    if (!indexNowKey) {
+        return NextResponse.json({ 
+            error: 'IndexNow key not configured for this site. Go to Site Settings to set up your IndexNow key.',
+            success: false
+        }, { status: 400 });
+    }
     const host = site.domain.replace('https://', '').replace('http://', '').split('/')[0];
     
     const submissionResult = await submitToIndexNow(host, indexNowKey, null, urlsToSubmit);

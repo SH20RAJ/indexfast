@@ -23,3 +23,4 @@ create and publish 2 articles on  /blog showcasing all http://localhost:3000/das
 
   we have to give a generous free tier so create a plan for it and also add a payment gateway the best way possible use whatever you think is best and whatever creds api keys webhooks I have to do from my end tell me 
 
+delete all the old code and replace it with the new code delete useless codes and components 
