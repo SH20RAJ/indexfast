@@ -50,7 +50,8 @@
 		"react-dom": "19.1.5",
 		"sonner": "^2.0.7",
 		"tailwind-merge": "^3.4.0",
-		"tailwindcss-animate": "^1.0.7"
+		"tailwindcss-animate": "^1.0.7",
+		"vercel": "^50.18.2"
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3",
