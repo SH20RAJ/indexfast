@@ -1,7 +1,7 @@
 "use client";
 
 import { CreativePricing, type PricingTier } from '@/components/ui/creative-pricing'
-import { CheckoutButton } from '@/components/checkout-button'
+
 import { Rocket, Sparkles, Zap } from 'lucide-react'
 import { CreativeButton } from '@/components/ui/creative-button'
 import Link from 'next/link'
@@ -11,13 +11,7 @@ interface PricingProps {
   isAuthenticated?: boolean;
 }
 
-const planHierarchy = {
-  free: 0,
-  pro: 1,
-  business: 2,
-};
-
-export function Pricing({ currentPlan = 'free', isAuthenticated = false }: PricingProps) {
+export function Pricing({ isAuthenticated = false }: PricingProps) {
   const pricingTiers: PricingTier[] = [
     {
       name: "Free",
@@ -31,11 +25,7 @@ export function Pricing({ currentPlan = 'free', isAuthenticated = false }: Prici
         "Basic History"
       ],
       color: "blue",
-      customButton: currentPlan === 'free' ? (
-        <CreativeButton variant="outline" disabled className="w-full">
-          Current Plan
-        </CreativeButton>
-      ) : (
+      customButton: (
         <Link href="/dashboard">
           <CreativeButton variant="outline" className="w-full">
             Go to Dashboard
@@ -63,14 +53,12 @@ export function Pricing({ currentPlan = 'free', isAuthenticated = false }: Prici
             Get Started
           </CreativeButton>
         </Link>
-      ) : planHierarchy[currentPlan] >= planHierarchy.pro ? (
-        <CreativeButton variant="outline" disabled className="w-full">
-          {currentPlan === 'pro' ? 'Current Plan' : 'Downgrade to Pro'}
-        </CreativeButton>
       ) : (
-        <CheckoutButton plan="pro" billingPeriod="monthly" className="w-full">
-          Upgrade to Pro
-        </CheckoutButton>
+        <Link href="/dashboard">
+          <CreativeButton variant="primary" className="w-full">
+            Included in Free Beta
+          </CreativeButton>
+        </Link>
       )
     },
     {
@@ -86,20 +74,10 @@ export function Pricing({ currentPlan = 'free', isAuthenticated = false }: Prici
         "SLA Support"
       ],
       color: "purple",
-      customButton: !isAuthenticated ? (
-        <Link href="/login">
-          <CreativeButton variant="primary" className="w-full">
-            Get Started
-          </CreativeButton>
-        </Link>
-      ) : currentPlan === 'business' ? (
-        <CreativeButton variant="outline" disabled className="w-full">
-          Current Plan
+      customButton: (
+        <CreativeButton variant="outline" disabled className="w-full opacity-50 cursor-not-allowed">
+          Coming Soon (Post-Beta)
         </CreativeButton>
-      ) : (
-        <CheckoutButton plan="business" billingPeriod="monthly" className="w-full">
-          Upgrade to Business
-        </CheckoutButton>
       )
     }
   ];
@@ -114,7 +92,7 @@ export function Pricing({ currentPlan = 'free', isAuthenticated = false }: Prici
       </div>
       <CreativePricing 
         title="Simple, Transparent Pricing"
-        description="Choose the plan that fits your indexing needs."
+        description="We are currently in Beta. Enjoy unlimited access to Pro features for free!"
         tiers={pricingTiers}
       />
     </section>

@@ -1,16 +1,14 @@
 "use client";
 
-import { useState } from "react";
+
 import { format } from "date-fns";
 import { 
   CreditCard, 
   Zap, 
   Calendar, 
-  Loader2, 
   CheckCircle2, 
   AlertCircle 
 } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,7 +20,6 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { createCustomerPortalSession } from "@/app/actions/portal";
 
 // Should ideally match schema types but simplified here
 interface BillingClientProps {
@@ -37,7 +34,6 @@ const PLAN_LIMITS: Record<string, number> = {
 };
 
 export function BillingClient({ user, subscription }: BillingClientProps) {
-  const [loading, setLoading] = useState(false);
 
   // Derive plan details
   const currentPlan = user.plan || "free";
@@ -55,28 +51,22 @@ export function BillingClient({ user, subscription }: BillingClientProps) {
   const cancelAtPeriodEnd = subscription?.cancelAtPeriodEnd;
   const renewalDate = user.planExpiresAt ? new Date(user.planExpiresAt) : null;
 
-  const handlePortalAccess = async () => {
-    setLoading(true);
-    try {
-      const result = await createCustomerPortalSession();
-      if (result.success && result.url) {
-        window.location.href = result.url;
-      } else {
-        toast.error(result.error || "Failed to open billing portal.");
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong.");
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Billing & Usage</h1>
         <p className="text-muted-foreground mt-2">Manage your plan, payment methods, and monitor usage.</p>
+        
+        <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-3">
+          <Zap className="w-5 h-5 text-primary mt-0.5" />
+          <div>
+            <h3 className="font-medium text-primary">Beta Version - All Features Free</h3>
+            <p className="text-sm text-primary/80 mt-1">
+              IndexFast is currently in Beta. All Pro features, including unlimited usage and advanced limits, are unlocked and free for all users. Enjoy!
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -138,36 +128,8 @@ export function BillingClient({ user, subscription }: BillingClientProps) {
               )}
             </div>
           </CardContent>
-          <CardFooter className="pt-4 border-t bg-muted/20">
-            {isFree ? (
-              <Button asChild className="w-full sm:w-auto">
-                <a href="/pricing">Upgrade Plan</a>
-              </Button>
-            ) : (
-              <div className="flex gap-3 w-full sm:w-auto">
-                <Button 
-                  onClick={handlePortalAccess} 
-                  disabled={loading} 
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    "Manage Subscription"
-                  )}
-                </Button>
-                {/* Upgrade options could also be here if we want to upsell Pro -> Business */}
-                {currentPlan === 'pro' && (
-                   <Button asChild variant="secondary" className="w-full sm:w-auto">
-                      <a href="/pricing">Upgrade to Business</a>
-                   </Button>
-                )}
-              </div>
-            )}
+          <CardFooter className="pt-4 border-t bg-muted/20 text-sm text-muted-foreground justify-center">
+            Billing management is disabled during the beta period. Enjoy your free Pro access!
           </CardFooter>
         </Card>
 
@@ -214,9 +176,8 @@ export function BillingClient({ user, subscription }: BillingClientProps) {
                  <span className="font-medium">Every 24 Hours</span>
                </div>
                {isFree && (
-                 <div className="text-sm bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 p-3 rounded border border-yellow-200 dark:border-yellow-800">
-                    You are on the Free plan limits. 
-                    <a href="/pricing" className="font-bold hover:underline ml-1">Upgrade to Pro</a> for 10x more capacity.
+                 <div className="text-sm bg-primary/10 text-primary p-3 rounded border border-primary/20">
+                    You currently have Pro limits active for the beta duration.
                  </div>
                )}
             </div>

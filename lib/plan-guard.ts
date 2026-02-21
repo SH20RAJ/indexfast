@@ -36,7 +36,12 @@ export async function enforcePlanLimits(options: GuardOptions = {}): Promise<Pla
         return { allowed: false, error: "User not found" };
     }
 
-    // 2. Check Plan Expiry & Downgrade if needed
+    // --- MOCK PRO FOR ALL USERS (Monetization Disabled) ---
+    dbUser.plan = 'pro';
+    dbUser.credits = 999999;
+    // ------------------------------------------------------
+
+    // 2. Check Plan Expiry & Downgrade if needed (Disabled by mock)
     if (dbUser.plan !== 'free' && dbUser.planExpiresAt && new Date() > dbUser.planExpiresAt) {
         // Plan expired, downgrade immediately
         const freeCredits = getPlanCredits('free');
