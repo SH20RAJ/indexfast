@@ -84,9 +84,14 @@ export async function POST(request: NextRequest) {
     let failed = 0;
 
     try {
+        const host = new URL(urls[0]).hostname;
+        const protocol = urls[0].startsWith('http:') ? 'http://' : 'https://';
+        const keyLocation = `${protocol}${host}/${INDEXNOW_KEY}.txt`;
+        
         const indexNowPayload = {
-            host: new URL(urls[0]).hostname,
+            host,
             key: INDEXNOW_KEY,
+            keyLocation,
             urlList: urls,
         };
 

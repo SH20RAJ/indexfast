@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { XMLParser } from 'fast-xml-parser';
 import db from "@/lib/db";
 import { sites, users, submissions, usageLogs } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 // Helper to submit to IndexNow
 async function submitToIndexNow(host: string, key: string, keyLocation: string | null, urlList: string[]) {
@@ -127,16 +127,26 @@ export async function GET(request: Request) {
         const host = site.domain.replace('https://', '').replace('http://', '').split('/')[0];
         
         // Submit
-        const submissionResult = await submitToIndexNow(host, site.indexNowKey, null, urlsToSubmit);
+        const siteProtocol = site.domain.startsWith('http') ? '' : 'https://';
+        const keyLocation = `${siteProtocol}${site.domain}/${site.indexNowKey}.txt`;
+        const submissionResult = await submitToIndexNow(host, site.indexNowKey, keyLocation, urlsToSubmit);
 
         if (submissionResult.success) {
-            // Log submission
-            await db.insert(usageLogs).values({
-                userId: dbUser.id,
-                date: new Date().toISOString().split('T')[0],
-                count: urlsToSubmit.length,
-                type: 'submission'
-            });
+            // Log submission (Upsert to prevent unique constraint violations)
+            await db.insert(usageLogs)
+                .values({
+                    userId: dbUser.id,
+                    date: new Date().toISOString().split('T')[0],
+                    count: urlsToSubmit.length,
+                    type: 'submission'
+                })
+                .onConflictDoUpdate({
+                    target: [usageLogs.userId, usageLogs.date, usageLogs.type],
+                    set: {
+                        count: sql`${usageLogs.count} + ${urlsToSubmit.length}`,
+                        updatedAt: new Date()
+                    }
+                });
 
             // Log individual URLs
             const submissionsValues = urlsToSubmit.map(url => ({

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { XMLParser } from 'fast-xml-parser'
 import db from "@/lib/db"
 import { sites, submissions, usageLogs } from "@/lib/schema"
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 
 // Helper to submit to IndexNow
 async function submitToIndexNow(host: string, key: string, keyLocation: string | null, urlList: string[]) {
@@ -142,19 +142,29 @@ export async function POST(request: Request) {
         }, { status: 400 });
     }
     const host = site.domain.replace('https://', '').replace('http://', '').split('/')[0];
+    const protocol = site.domain.startsWith('http') ? '' : 'https://';
+    const keyLocation = `${protocol}${site.domain}/${indexNowKey}.txt`;
     
-    const submissionResult = await submitToIndexNow(host, indexNowKey, null, urlsToSubmit);
+    const submissionResult = await submitToIndexNow(host, indexNowKey, keyLocation, urlsToSubmit);
 
     // 6. Deduct Credits & Log
     if (submissionResult.success) {
         await deductCredit(urlsToSubmit.length);
         
-        await db.insert(usageLogs).values({
-            userId: user.id,
-            date: new Date().toISOString().split('T')[0],
-            count: urlsToSubmit.length,
-            type: 'submission'
-        });
+        await db.insert(usageLogs)
+            .values({
+                userId: user.id,
+                date: new Date().toISOString().split('T')[0],
+                count: urlsToSubmit.length,
+                type: 'submission'
+            })
+            .onConflictDoUpdate({
+                target: [usageLogs.userId, usageLogs.date, usageLogs.type],
+                set: {
+                    count: sql`${usageLogs.count} + ${urlsToSubmit.length}`,
+                    updatedAt: new Date()
+                }
+            });
     }
 
     // 7. Save Submissions
