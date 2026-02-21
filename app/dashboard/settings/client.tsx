@@ -1,30 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { CreativeButton } from "@/components/ui/creative-button";
-import { createCustomerPortalSession } from "@/app/actions/portal";
-import { toast } from "sonner";
-import { Loader2, CreditCard } from "lucide-react";
+import { CreditCard, Zap } from "lucide-react";
 
 export default function SettingsClient() {
-  const [loading, setLoading] = useState(false);
-
-  const handleManageSubscription = async () => {
-    setLoading(true);
-    try {
-      const result = await createCustomerPortalSession();
-      if (result.success && result.url) {
-        window.location.href = result.url;
-      } else {
-        toast.error(result.error || "Failed to open billing portal.");
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong.");
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto py-10">
@@ -39,23 +17,18 @@ export default function SettingsClient() {
             Billing & Subscription
         </h2>
         <p className="text-sm text-muted-foreground">
-            Manage your subscription, view invoices, and update payment methods via our secure billing portal.
+            Billing management is currently disabled. Enjoy your free Pro access during the beta!
         </p>
         
-        <CreativeButton 
-            onClick={handleManageSubscription} 
-            disabled={loading}
-            variant="outline"
-        >
-            {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Redirecting...
-                </>
-            ) : (
-                "Manage Subscription"
-            )}
-        </CreativeButton>
+        <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-lg flex items-start gap-3">
+          <Zap className="w-5 h-5 text-primary mt-0.5" />
+          <div>
+            <h3 className="font-medium text-primary">Beta Version - All Features Free</h3>
+            <p className="text-sm text-primary/80 mt-1">
+              IndexFast is currently in Beta. All Pro features, including unlimited usage and advanced limits, are unlocked and free for all users.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
