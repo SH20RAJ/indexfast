@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { fetchExternalSitemap } from "@/app/actions/sitemaps";
 
 type SubmitMode = "manual" | "sitemap" | "api";
 type UrlStatus = "valid" | "invalid" | "duplicate";
@@ -85,8 +86,13 @@ export default function SubmitClient({ site }: { site: { id: string; domain: str
         try { new URL(sitemapUrl); } catch { toast.error("Invalid sitemap URL"); return; }
         setFetchingSitemap(true);
         try {
-            const res = await fetch(sitemapUrl);
-            const text = await res.text();
+            const res = await fetchExternalSitemap(sitemapUrl);
+            if (!res.success || !res.text) {
+                toast.error("Failed to fetch sitemap", { description: res.error || "Could not retrieve the XML." });
+                setFetchingSitemap(false);
+                return;
+            }
+            const text = res.text;
             const parser = new DOMParser();
             const doc = parser.parseFromString(text, "text/xml");
             const locs = doc.querySelectorAll("loc");
@@ -105,7 +111,7 @@ export default function SubmitClient({ site }: { site: { id: string; domain: str
                 toast.error("No URLs found in sitemap", { description: "Make sure the URL points to a valid XML sitemap." });
             }
         } catch {
-            toast.error("Failed to fetch sitemap", { description: "CORS or network error. Try pasting URLs manually." });
+            toast.error("Failed to fetch sitemap", { description: "Network error occurred. Try pasting URLs manually." });
         }
         setFetchingSitemap(false);
     };

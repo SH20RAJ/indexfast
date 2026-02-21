@@ -109,3 +109,30 @@ export async function deleteSitemap(sitemapId: string) {
         return { success: false, error: "Failed to delete" };
     }
 }
+
+export async function fetchExternalSitemap(url: string) {
+    const user = await stackServerApp.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    try {
+        const res = await fetch(url, {
+            headers: {
+                'User-Agent': 'IndexFast-Bot/1.0',
+            },
+            next: {
+                revalidate: 0 // do not cache
+            }
+        });
+        
+        if (!res.ok) {
+            return { success: false, error: `Failed to fetch: ${res.status} ${res.statusText}` };
+        }
+        
+        const text = await res.text();
+        return { success: true, text };
+    } catch (e: unknown) {
+        console.error("External Sitemap Fetch Error:", e);
+        const msg = e instanceof Error ? e.message : "Network error";
+        return { success: false, error: msg };
+    }
+}
