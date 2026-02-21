@@ -128,7 +128,8 @@ export async function GET(request: Request) {
         
         // Submit
         const siteProtocol = site.domain.startsWith('http') ? '' : 'https://';
-        const keyLocation = `${siteProtocol}${site.domain}/${site.indexNowKey}.txt`;
+        const defaultLocation = `${siteProtocol}${site.domain}/${site.indexNowKey}.txt`;
+        const keyLocation = site.indexNowKeyLocation || defaultLocation; // Favor custom location
         const submissionResult = await submitToIndexNow(host, site.indexNowKey, keyLocation, urlsToSubmit);
 
         if (submissionResult.success) {

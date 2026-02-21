@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey, checkRateLimit, ApiAuthResult } from "@/lib/api-auth";
 import db from "@/lib/db";
 import { sites, submissions } from "@/lib/schema";
-import { eq, and, desc } from "drizzle-orm";
-import { deductCredit, checkCredits } from "@/app/actions/dashboard";
+import { eq, and } from "drizzle-orm";
+import { deductCredit } from "@/app/actions/dashboard";
 
 export async function POST(request: NextRequest) {
     // Auth
@@ -86,7 +86,8 @@ export async function POST(request: NextRequest) {
     try {
         const host = new URL(urls[0]).hostname;
         const protocol = urls[0].startsWith('http:') ? 'http://' : 'https://';
-        const keyLocation = `${protocol}${host}/${INDEXNOW_KEY}.txt`;
+        const defaultLocation = `${protocol}${host}/${INDEXNOW_KEY}.txt`;
+        const keyLocation = site.indexNowKeyLocation || defaultLocation;
         
         const indexNowPayload = {
             host,

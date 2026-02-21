@@ -24,6 +24,7 @@ function mapSiteToCamelCase(row: any) {
         isVerified: row.is_verified,
         autoIndex: row.auto_index,
         indexNowKey: row.index_now_key,
+        indexNowKeyLocation: row.index_now_key_location,
         indexNowKeyVerified: row.index_now_key_verified,
         lastSyncAt: row.last_sync_at,
         createdAt: row.created_at
@@ -409,6 +410,30 @@ export async function regenerateIndexNowKey(siteId: string) {
         return { success: true, key: newKey };
     } catch (error) {
         console.error("Regenerate IndexNow Key Error:", error);
+        return { success: false, error: (error as Error).message };
+    }
+}
+
+export async function updateIndexNowSettings(siteId: string, customKey: string, customLocation: string) {
+    const user = await stackServerApp.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    try {
+        const site = await db.query.sites.findFirst({
+            where: and(eq(sites.id, siteId), eq(sites.userId, user.id))
+        });
+        
+        if (!site) throw new Error("Site not found");
+
+        await db.update(sites).set({ 
+            indexNowKey: customKey ? customKey.trim() : null,
+            indexNowKeyLocation: customLocation ? customLocation.trim() : null,
+            indexNowKeyVerified: false // Require re-verification
+        }).where(eq(sites.id, siteId));
+
+        return { success: true };
+    } catch (error) {
+        console.error("Update IndexNow Settings Error:", error);
         return { success: false, error: (error as Error).message };
     }
 }

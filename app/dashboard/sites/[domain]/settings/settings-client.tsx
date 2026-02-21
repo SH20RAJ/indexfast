@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 interface SiteData {
     id: string; domain: string; gscSiteUrl: string; isVerified: boolean;
     autoIndex: boolean; createdAt: string | Date; permissionLevel: string | null;
-    indexNowKey: string | null; indexNowKeyVerified: boolean;
+    indexNowKey: string | null; indexNowKeyLocation: string | null; indexNowKeyVerified: boolean;
 }
 
 export default function SiteSettingsClient({ site }: { site: SiteData }) {
@@ -26,10 +26,12 @@ export default function SiteSettingsClient({ site }: { site: SiteData }) {
 
     // IndexNow key state
     const [indexNowKey, setIndexNowKey] = useState(site.indexNowKey || "");
+    const [indexNowLocation, setIndexNowLocation] = useState(site.indexNowKeyLocation || "");
     const [keyVerified, setKeyVerified] = useState(site.indexNowKeyVerified);
     const [copied, setCopied] = useState<string | null>(null);
     const [verifying, setVerifying] = useState(false);
     const [regenerating, setRegenerating] = useState(false);
+    const [savingKey, setSavingKey] = useState(false);
 
     const handleToggleAutoIndex = async () => {
         try {
@@ -90,6 +92,7 @@ export default function SiteSettingsClient({ site }: { site: SiteData }) {
             const result = await regenerateIndexNowKey(site.id);
             if (result.success && result.key) {
                 setIndexNowKey(result.key);
+                setIndexNowLocation(""); // Reset custom location
                 setKeyVerified(false);
                 toast.success("New IndexNow key generated", { description: "Remember to update the key file on your domain." });
             } else {
@@ -99,6 +102,27 @@ export default function SiteSettingsClient({ site }: { site: SiteData }) {
             toast.error("Failed to regenerate key");
         }
         setRegenerating(false);
+    };
+
+    const handleSaveKeySettings = async () => {
+        if (!indexNowKey) {
+            toast.error("Key cannot be empty");
+            return;
+        }
+        setSavingKey(true);
+        try {
+            const { updateIndexNowSettings } = await import("@/app/actions/dashboard");
+            const result = await updateIndexNowSettings(site.id, indexNowKey, indexNowLocation);
+            if (result.success) {
+                setKeyVerified(false);
+                toast.success("Settings saved", { description: "Please re-verify your key to ensure it is hosted correctly." });
+            } else {
+                toast.error("Failed to save settings", { description: result.error });
+            }
+        } catch (e: unknown) {
+             toast.error("Failed", { description: (e as Error).message });
+        }
+        setSavingKey(false);
     };
 
     const domain = site.domain.replace(/^https?:\/\//, "").replace(/\/+$/, "");
@@ -150,58 +174,59 @@ export default function SiteSettingsClient({ site }: { site: SiteData }) {
                     </div>
                 </div>
 
-                {/* Key Display */}
-                {indexNowKey && (
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                            <div className="flex-1 px-3 py-2.5 bg-muted/20 border border-border/30 rounded-lg font-mono text-sm select-all truncate">
-                                {indexNowKey}
-                            </div>
+                {/* Key Form */}
+                <div className="space-y-4 pt-2">
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+                            IndexNow API Key
+                        </label>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={indexNowKey}
+                                onChange={(e) => { setIndexNowKey(e.target.value); setKeyVerified(false); }}
+                                placeholder="Your 32-character API key"
+                                className="flex-1 px-3 py-2 text-sm font-mono bg-muted/10 border border-border/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                            />
                             <button
                                 onClick={() => copyToClipboard(indexNowKey, "key")}
-                                className="p-2.5 hover:bg-muted/30 rounded-lg border border-border/30 transition-colors shrink-0"
+                                className="px-3 py-2 hover:bg-muted/30 rounded-lg border border-border/30 transition-colors shrink-0"
+                                title="Copy Key"
                             >
                                 {copied === "key" ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-muted-foreground" />}
                             </button>
                         </div>
-
-                        {/* Key File URL */}
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
-                                Key File URL
-                            </label>
-                            <div className="flex items-center gap-2">
-                                <div className="flex-1 px-3 py-2 bg-muted/10 border border-border/20 rounded-lg font-mono text-xs text-muted-foreground/70 truncate">
-                                    {keyFileUrl}
-                                </div>
-                                <button
-                                    onClick={() => copyToClipboard(keyFileUrl, "url")}
-                                    className="p-2 hover:bg-muted/30 rounded-lg border border-border/30 transition-colors shrink-0"
-                                >
-                                    {copied === "url" ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-muted-foreground" />}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Key File Content */}
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
-                                Key File Content (paste into {indexNowKey}.txt)
-                            </label>
-                            <div className="flex items-center gap-2">
-                                <div className="flex-1 px-3 py-2 bg-muted/10 border border-border/20 rounded-lg font-mono text-xs text-muted-foreground/70">
-                                    {indexNowKey}
-                                </div>
-                                <button
-                                    onClick={() => copyToClipboard(indexNowKey, "content")}
-                                    className="p-2 hover:bg-muted/30 rounded-lg border border-border/30 transition-colors shrink-0"
-                                >
-                                    {copied === "content" ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-muted-foreground" />}
-                                </button>
-                            </div>
-                        </div>
                     </div>
-                )}
+
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50 flex gap-2">
+                            Key File URL <span className="font-normal normal-case opacity-60">(Optional)</span>
+                        </label>
+                        <div className="flex gap-2">
+                            <input
+                                type="url"
+                                value={indexNowLocation}
+                                onChange={(e) => { setIndexNowLocation(e.target.value); setKeyVerified(false); }}
+                                placeholder={keyFileUrl}
+                                className="flex-1 px-3 py-2 text-sm font-mono bg-muted/10 border border-border/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                            />
+                            <button
+                                onClick={() => copyToClipboard(indexNowLocation || keyFileUrl, "url")}
+                                className="px-3 py-2 hover:bg-muted/30 rounded-lg border border-border/30 transition-colors shrink-0"
+                                title="Copy URL"
+                            >
+                                {copied === "url" ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-muted-foreground" />}
+                            </button>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground/50">
+                            Leave blank to use the default location: <code className="text-muted-foreground">{keyFileUrl}</code>
+                        </p>
+                    </div>
+
+                    <DashButton onClick={handleSaveKeySettings} loading={savingKey} size="sm" variant="outline" className="w-full">
+                        Save Configuration
+                    </DashButton>
+                </div>
 
                 {/* Instructions */}
                 <DashCard variant="accent" className="p-3">
@@ -210,10 +235,10 @@ export default function SiteSettingsClient({ site }: { site: SiteData }) {
                         <div className="space-y-1.5">
                             <p className="text-xs font-medium text-primary">Setup Instructions</p>
                             <ol className="text-[11px] text-muted-foreground/60 space-y-1 list-decimal list-inside">
-                                <li>Create a text file named <code className="px-1 py-0.5 rounded bg-muted/30 text-[10px]">{indexNowKey}.txt</code></li>
-                                <li>Paste only the key <code className="px-1 py-0.5 rounded bg-muted/30 text-[10px]">{indexNowKey}</code> as the file content</li>
-                                <li>Upload it to your domain root: <code className="px-1 py-0.5 rounded bg-muted/30 text-[10px]">https://{domain}/{indexNowKey}.txt</code></li>
-                                <li>Click &quot;Verify Key&quot; below to confirm</li>
+                                <li>If you are using a CMS plugin (like Yoast/RankMath), paste your existing key/URL above and save.</li>
+                                <li>Otherwise, grab your key from above and paste it into a file named <code className="px-1 py-0.5 rounded bg-muted/30 text-[10px]">{indexNowKey}.txt</code></li>
+                                <li>Upload it to your domain root so it&apos;s accessible at: <code className="px-1 py-0.5 rounded bg-muted/30 text-[10px]">{indexNowLocation || keyFileUrl}</code></li>
+                                <li>Click &quot;Verify Key&quot; below to confirm everything is linked correctly.</li>
                             </ol>
                         </div>
                     </div>

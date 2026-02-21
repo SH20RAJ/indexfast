@@ -143,7 +143,8 @@ export async function POST(request: Request) {
     }
     const host = site.domain.replace('https://', '').replace('http://', '').split('/')[0];
     const protocol = site.domain.startsWith('http') ? '' : 'https://';
-    const keyLocation = `${protocol}${site.domain}/${indexNowKey}.txt`;
+    const defaultLocation = `${protocol}${site.domain}/${indexNowKey}.txt`;
+    const keyLocation = site.indexNowKeyLocation || defaultLocation; // Favor custom location
     
     const submissionResult = await submitToIndexNow(host, indexNowKey, keyLocation, urlsToSubmit);
 
