@@ -26,7 +26,7 @@ export function LoginForm({ initialMode = "login" }: { initialMode?: "login" | "
       >
         <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl relative overflow-hidden group">
             {/* animated border gradient */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-[1500ms] pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform [transition-duration:1500ms] pointer-events-none" />
 
             <div className="mb-8 text-center">
                 <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-neutral-400 font-handwritten">
