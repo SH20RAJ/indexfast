@@ -33,7 +33,7 @@ const baseMetadata: Metadata = {
     description: 'Submit your URLs to Google, Bing, and Yandex automatically. The fastest way to get indexed.',
     images: [
       {
-        url: 'https://indexfast.strivio.world/og-image.png',
+        url: 'https://indexfast.unstory.app/og-image.png',
         width: 1200,
         height: 630,
         alt: 'IndexFast Dashboard',
@@ -44,7 +44,7 @@ const baseMetadata: Metadata = {
     card: 'summary_large_image',
     title: 'IndexFast - Automate Google Indexing',
     description: 'Stop waiting for Google to crawl your site. Push URLs directly to the index.',
-    // images: ['https://indexfast.strivio.world/og-image.jpg'], // Optional if same as OG
+    // images: ['https://indexfast.unstory.app/og-image.jpg'], // Optional if same as OG
     creator: '@indexfast',
   },
   alternates: {
