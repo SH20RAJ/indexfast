@@ -57,18 +57,18 @@ export function Sidebar({ sites }: { sites: SiteInfo[] }) {
             key={item.href}
             href={item.href}
             className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors group relative",
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all group relative border border-transparent",
                 isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    ? "bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)] border-white/10"
+                    : "text-muted-foreground/70 hover:text-white hover:bg-white/5",
                 isCollapsed && "justify-center px-2"
             )}
             onClick={() => setIsOpen(false)}
         >
-            <item.icon className="h-4.5 w-4.5 flex-shrink-0" />
-            {!isCollapsed && <span>{item.title}</span>}
+            <item.icon className={cn("h-4 w-4 flex-shrink-0 transition-transform group-hover:scale-110", isActive && "text-white")} />
+            {!isCollapsed && <span className="tracking-tight">{item.title}</span>}
             {isCollapsed && (
-                <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap border shadow-sm">
+                <div className="absolute left-full ml-4 px-3 py-1.5 bg-zinc-900 text-white text-[10px] font-medium rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all z-50 whitespace-nowrap border border-white/10 shadow-xl -translate-x-2 group-hover:translate-x-0 tracking-wide">
                     {item.title}
                 </div>
             )}
@@ -85,66 +85,72 @@ export function Sidebar({ sites }: { sites: SiteInfo[] }) {
             </button>
 
             <div className={cn(
-                "fixed inset-y-0 left-0 z-40 bg-card border-r transition-all duration-300 ease-in-out lg:static lg:block",
+                "fixed inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out lg:static lg:block p-3",
                 isOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0",
-                isCollapsed ? "lg:w-16" : "lg:w-60"
+                isCollapsed ? "lg:w-20" : "lg:w-64"
             )}>
-                <div className="flex flex-col h-full">
+                <div className="flex flex-col h-full glass-dark rounded-2xl shadow-2xl overflow-hidden border-white/5">
                     {/* Header */}
-                    <div className="h-14 flex items-center justify-between px-3 border-b">
-                        {!isCollapsed && <span className="text-lg font-bold font-handwritten tracking-tight">IndexFast</span>}
+                    <div className="h-16 flex items-center justify-between px-4 border-b border-white/5">
+                        {!isCollapsed && (
+                            <div className="flex flex-col">
+                                <span className="text-lg font-bold font-handwritten tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+                                    IndexFast
+                                </span>
+                                <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground/50 font-medium">Professional</span>
+                            </div>
+                        )}
                         <button
                             onClick={() => setIsCollapsed(!isCollapsed)}
-                            className="hidden lg:flex p-1 hover:bg-muted rounded-md"
+                            className="p-1.5 hover:bg-white/5 rounded-lg transition-colors ml-auto"
                         >
-                            <ChevronLeft className={cn("h-4 w-4 transition-transform", isCollapsed && "rotate-180")} />
+                            <ChevronLeft className={cn("h-4 w-4 text-muted-foreground transition-transform", isCollapsed && "rotate-180")} />
                         </button>
                     </div>
 
-                    {/* Domain Switcher */}
-                    {!isCollapsed && sites.length > 0 && (
-                        <div className="px-3 py-3 border-b">
-                            <DomainSwitcher sites={sites} currentDomain={currentDomain} />
-                        </div>
-                    )}
+                    <div className="flex-1 flex flex-col overflow-y-auto py-4">
+                        {/* Domain Switcher */}
+                        {!isCollapsed && sites.length > 0 && (
+                            <div className="px-4 mb-6">
+                                <DomainSwitcher sites={sites} currentDomain={currentDomain} />
+                            </div>
+                        )}
 
-                    {/* Site-Scoped Navigation */}
-                    {isSiteScoped && currentDomain && (
-                        <div className="px-3 py-3 space-y-0.5">
+                        {/* Site-Scoped Navigation */}
+                        {isSiteScoped && currentDomain && (
+                            <div className="px-3 space-y-1 mb-6">
+                                {!isCollapsed && (
+                                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/40 px-3 mb-2">
+                                        Property
+                                    </p>
+                                )}
+                                {siteNavItems.map((item) => {
+                                    const href = `/dashboard/sites/${encodeURIComponent(currentDomain)}/${item.segment}`;
+                                    const isActive = pathname.includes(`/${item.segment}`);
+                                    return renderNavLink({ ...item, href }, isActive);
+                                })}
+                            </div>
+                        )}
+
+                        {/* Global Navigation */}
+                        <div className="px-3 space-y-1">
                             {!isCollapsed && (
-                                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-3 mb-2">
-                                    Property
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/40 px-3 mb-2">
+                                    {isSiteScoped ? "General" : "Navigation"}
                                 </p>
                             )}
-                            {siteNavItems.map((item) => {
-                                const href = `/dashboard/sites/${encodeURIComponent(currentDomain)}/${item.segment}`;
-                                const isActive = pathname.includes(`/${item.segment}`);
-                                return renderNavLink({ ...item, href }, isActive);
+                            {globalNavItems.map((item) => {
+                                const isActive = pathname === item.href || 
+                                    (item.href !== "/dashboard/sites" && pathname.startsWith(item.href));
+                                return renderNavLink(item, isActive);
                             })}
                         </div>
-                    )}
-
-                    {/* Divider */}
-                    {isSiteScoped && <div className="border-t mx-3" />}
-
-                    {/* Global Navigation */}
-                    <div className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
-                        {!isCollapsed && (
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-3 mb-2">
-                                {isSiteScoped ? "General" : "Navigation"}
-                            </p>
-                        )}
-                        {globalNavItems.map((item) => {
-                            const isActive = pathname === item.href || 
-                                (item.href !== "/dashboard/sites" && pathname.startsWith(item.href));
-                            return renderNavLink(item, isActive);
-                        })}
                     </div>
 
                     {/* Footer */}
-                    <div className={cn("p-3 border-t space-y-2", isCollapsed && "items-center flex flex-col")}>
+                    <div className={cn("p-4 border-t border-white/5 space-y-3 bg-white/[0.02]", isCollapsed && "items-center flex flex-col")}>
                         <div className="flex items-center justify-between w-full">
-                            {!isCollapsed && <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Theme</span>}
+                            {!isCollapsed && <span className="text-[10px] text-muted-foreground/40 uppercase tracking-widest font-medium">Settings</span>}
                             <ModeToggle />
                         </div>
                         {user && (
@@ -154,8 +160,8 @@ export function Sidebar({ sites }: { sites: SiteInfo[] }) {
                                     router.push("/");
                                 }}
                                 className={cn(
-                                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors w-full",
-                                    "text-muted-foreground hover:bg-destructive/10 hover:text-destructive",
+                                    "flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all w-full",
+                                    "text-muted-foreground hover:bg-destructive/10 hover:text-destructive border border-transparent hover:border-destructive/20",
                                     isCollapsed && "justify-center px-2"
                                 )}
                             >

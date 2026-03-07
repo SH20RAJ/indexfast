@@ -5,82 +5,82 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 240 10% 3.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 240 10% 3.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 240 10% 3.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --effect-1: 270 95% 75%; /* Purple */
-    --effect-2: 217 91% 75%; /* Blue */
+    --brand: 250 84% 54%;
+    --brand-foreground: 0 0% 98%;
 
-    --brand: 221.2 83.2% 53.3%; /* Blue-600 */
-    --brand-foreground: 210 40% 98%;
+    --effect-1: 270 95% 75%;
+    --effect-2: 217 91% 75%;
 
-    --bg-features: 48 96% 89%; /* Amber-50 approx - Light for Light mode */
-    --bg-section: 0 0% 100%; /* White for Light mode */
+    --bg-features: 240 10% 3.9% / 0.02;
+    --bg-section: 0 0% 100%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 240 10% 2%;
+    --foreground: 0 0% 98%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 240 10% 4%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 240 10% 2%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 240 3.7% 12%;
+    --muted-foreground: 240 5% 64.9%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 240 3.7% 12%;
+    --input: 240 3.7% 12%;
+    --ring: 240 4.9% 83.9%;
 
-    --effect-1: 270 95% 60%; /* Purple */
-    --effect-2: 217 91% 60%; /* Blue */
+    --brand: 250 84% 64%;
+    --brand-foreground: 0 0% 98%;
 
-    --brand: 221.2 83.2% 53.3%; /* Blue-600 */
-    --brand-foreground: 210 40% 98%;
+    --effect-1: 270 95% 60%;
+    --effect-2: 217 91% 60%;
 
-    --bg-features: 240 5.9% 10%; /* Zinc-950 approx - Dark for Dark mode */
-    --bg-section: 240 5.9% 10%; /* Zinc-950 approx - Dark for Dark mode */
+    --bg-features: 240 10% 4% / 0.5;
+    --bg-section: 240 10% 2%;
   }
 }
 
@@ -89,10 +89,18 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground selection:bg-brand/30 selection:text-white;
   }
+}
 
-  ::selection {
-    @apply bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900;
+@layer utilities {
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+  .glass-dark {
+    @apply bg-black/20 backdrop-blur-xl border border-white/5;
+  }
+  .glow-primary {
+    @apply shadow-[0_0_20px_rgba(139,92,246,0.15)];
   }
 }

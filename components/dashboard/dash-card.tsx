@@ -22,46 +22,48 @@ export function DashCard({
         <div
             className={cn(
                 // Base
-                "relative rounded-xl transition-all duration-200",
+                "relative rounded-2xl transition-all duration-300 overflow-hidden",
                 // Variants
                 variant === "default" && [
-                    "bg-card/60 backdrop-blur-sm",
-                    "border border-border/50",
+                    "bg-zinc-900/40 backdrop-blur-xl",
+                    "border border-white/5",
                 ],
                 variant === "stat" && [
-                    "bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm",
-                    "border border-border/30",
+                    "bg-zinc-900/60 backdrop-blur-2xl",
+                    "border border-white/10 shadow-2xl",
                 ],
                 variant === "ghost" && [
                     "bg-transparent",
-                    "border border-dashed border-border/40",
+                    "border border-dashed border-white/10",
                 ],
                 variant === "danger" && [
-                    "bg-red-500/5 backdrop-blur-sm",
-                    "border border-red-500/20",
+                    "bg-red-500/5 backdrop-blur-xl",
+                    "border border-red-500/10",
                 ],
                 variant === "accent" && [
-                    "bg-gradient-to-br from-primary/5 to-primary/10 backdrop-blur-sm",
-                    "border border-primary/20",
+                    "bg-gradient-to-br from-brand/5 to-brand/10 backdrop-blur-xl",
+                    "border border-brand/20",
                 ],
                 // Glow effects
-                glow === "blue" && "shadow-[0_0_20px_-5px_rgba(59,130,246,0.15)]",
-                glow === "emerald" && "shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)]",
-                glow === "purple" && "shadow-[0_0_20px_-5px_rgba(168,85,247,0.15)]",
-                glow === "amber" && "shadow-[0_0_20px_-5px_rgba(245,158,11,0.15)]",
-                glow === "rose" && "shadow-[0_0_20px_-5px_rgba(244,63,94,0.15)]",
-                glow === "none" && "shadow-sm",
+                glow === "blue" && "shadow-[0_0_30px_-10px_rgba(59,130,246,0.1)]",
+                glow === "emerald" && "shadow-[0_0_30px_-10px_rgba(16,185,129,0.1)]",
+                glow === "purple" && "shadow-[0_0_30px_-10px_rgba(168,85,247,0.1)]",
+                glow === "amber" && "shadow-[0_0_30px_-10px_rgba(245,158,11,0.1)]",
+                glow === "rose" && "shadow-[0_0_30px_-10px_rgba(244,63,94,0.1)]",
                 // Hover
                 hoverable && [
-                    "hover:border-primary/30",
-                    "hover:shadow-md hover:shadow-primary/5",
-                    "hover:-translate-y-0.5",
+                    "hover:border-white/20",
+                    "hover:shadow-xl hover:shadow-brand/5",
+                    "hover:-translate-y-1",
                     "cursor-pointer",
                 ],
                 className
             )}
             {...props}
         >
+            {/* Top highlight */}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            
             {children}
         </div>
     );
@@ -77,31 +79,35 @@ interface DashStatProps {
 }
 
 /**
- * Pre-styled stat card for dashboard metrics.
+ * Pre-styled stat card with premium typography.
  */
 export function DashStat({ label, value, icon, trend, glow = "none", accent }: DashStatProps) {
     return (
-        <DashCard variant="stat" glow={glow} className="p-5">
+        <DashCard variant="stat" glow={glow} className="p-6">
             <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70">
+                <div className="space-y-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40">
                         {label}
                     </p>
-                    <p className={cn("text-3xl font-bold tracking-tight", accent)}>
-                        {value}
-                    </p>
-                    {trend && (
-                        <p className={cn(
-                            "text-xs font-medium",
-                            trend.positive ? "text-emerald-500" : "text-red-500"
-                        )}>
-                            {trend.positive ? "↑" : "↓"} {trend.value}
+                    <div className="flex flex-col">
+                        <p className={cn("text-4xl font-bold tracking-tight bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent", accent)}>
+                            {value}
                         </p>
-                    )}
+                        {trend && (
+                            <p className={cn(
+                                "text-[11px] font-semibold mt-1 flex items-center gap-1",
+                                trend.positive ? "text-emerald-500/80" : "text-red-500/80"
+                            )}>
+                                <span className="text-[14px]">{trend.positive ? "↑" : "↓"}</span>
+                                {trend.value}
+                                <span className="text-muted-foreground/30 font-normal ml-0.5">vs last period</span>
+                            </p>
+                        )}
+                    </div>
                 </div>
                 {icon && (
-                    <div className="p-2.5 rounded-lg bg-muted/50">
-                        {icon}
+                    <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 shadow-inner">
+                        <div className="text-muted-foreground/60">{icon}</div>
                     </div>
                 )}
             </div>
