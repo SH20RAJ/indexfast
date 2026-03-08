@@ -13,7 +13,12 @@ interface ApiKeyInfo {
     isTest: boolean; lastUsedAt: string | null; createdAt: string;
 }
 
-export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKeyInfo[] }) {
+interface SiteInfo {
+    id: string;
+    domain: string;
+}
+
+export default function ApiKeysClient({ initialKeys, sites }: { initialKeys: ApiKeyInfo[]; sites: SiteInfo[] }) {
     const [keys, setKeys] = useState<ApiKeyInfo[]>(initialKeys);
     const [showCreate, setShowCreate] = useState(false);
     const [newKeyName, setNewKeyName] = useState("");
@@ -28,7 +33,15 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKeyInfo
         try {
             const result = await createApiKey(newKeyName.trim(), isTest);
             setRevealedKey(result.key);
-            setKeys(prev => [{ id: crypto.randomUUID(), name: result.name, keyPrefix: result.prefix, keyLast4: result.last4, isTest: result.isTest, lastUsedAt: null, createdAt: new Date().toISOString() }, ...prev]);
+            setKeys(prev => [{ 
+                id: result.id, 
+                name: result.name, 
+                keyPrefix: result.prefix, 
+                keyLast4: result.last4, 
+                isTest: result.isTest, 
+                lastUsedAt: null, 
+                createdAt: result.createdAt.toString() 
+            }, ...prev]);
             setNewKeyName(""); setShowCreate(false);
             toast.success("API key created");
         } catch (e: unknown) { toast.error("Failed", { description: (e as Error).message }); }
@@ -149,9 +162,34 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKeyInfo
                         <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">Base Endpoint</label>
                         <div className="flex items-center gap-2 p-2 rounded-md bg-muted/30 border border-border/20 font-mono text-xs">
                             <Globe className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-primary/70">https://indexfast.dev/api/v1/urls/submit</span>
+                            <span className="text-primary/70">{process.env.NEXT_PUBLIC_APP_URL || 'https://indexfast.dev'}/api/v1/urls/submit</span>
                         </div>
                     </div>
+
+                    {sites.length > 0 && (
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">Your Site IDs</label>
+                            <div className="space-y-1.5 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
+                                {sites.map(site => (
+                                    <div key={site.id} className="flex items-center justify-between p-2 rounded-md bg-muted/20 border border-border/10 text-[10px]">
+                                        <span className="font-medium text-muted-foreground truncate max-w-[120px]">{site.domain}</span>
+                                        <div className="flex items-center gap-2">
+                                            <code className="text-primary/60 font-mono">{site.id}</code>
+                                            <button 
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(site.id);
+                                                    toast.success("ID copied");
+                                                }}
+                                                className="hover:text-primary transition-colors"
+                                            >
+                                                <Copy className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     
                     <div className="space-y-2">
                         <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">cURL Example</label>

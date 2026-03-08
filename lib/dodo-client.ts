@@ -1,3 +1,5 @@
+import { getDodoConfig } from "./dodo-config";
+
 /**
  * Dodo Payments API Client
  * 
@@ -5,7 +7,8 @@
  * Never expose this to the client - API key must remain secure
  */
 
-const DODO_API_BASE = process.env.NODE_ENV === 'production' 
+const config = getDodoConfig();
+const DODO_API_BASE = config.environment === 'live' 
   ? 'https://live.dodopayments.com' 
   : 'https://test.dodopayments.com';
 
@@ -185,11 +188,11 @@ class DodoPaymentsClient {
  * Only use on the server side!
  */
 export function getDodoClient(): DodoPaymentsClient {
-  const apiKey = process.env.DODOPAYMENTS_API_KEY;
+  const { apiKey } = getDodoConfig();
   
   if (!apiKey) {
     throw new Error(
-      'DODOPAYMENTS_API_KEY environment variable is not set'
+      'Dodo Payments API key is not set for the current environment'
     );
   }
 

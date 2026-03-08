@@ -35,22 +35,26 @@ export async function createApiKey(name: string, isTest: boolean = false) {
     const keyPrefix = isTest ? "ixf_test_" : "ixf_live_";
     const keyLast4 = rawKey.slice(-4);
 
-    await db.insert(apiKeys).values({
+    const result = await db.insert(apiKeys).values({
         userId: user.id,
         name,
         keyHash,
         keyPrefix,
         keyLast4,
         isTest,
-    });
+    }).returning();
+
+    const inserted = result[0];
 
     // Return the raw key only once — never stored in plain text
     return {
+        id: inserted.id,
         key: rawKey,
-        name,
-        prefix: keyPrefix,
-        last4: keyLast4,
-        isTest,
+        name: inserted.name,
+        prefix: inserted.keyPrefix,
+        last4: inserted.keyLast4,
+        isTest: inserted.isTest,
+        createdAt: inserted.createdAt,
     };
 }
 
@@ -78,7 +82,7 @@ export async function revokeApiKey(keyId: string) {
     const user = await stackServerApp.getUser();
     if (!user) throw new Error("Unauthorized");
 
-    const result = await db.delete(apiKeys).where(
+    await db.delete(apiKeys).where(
         and(eq(apiKeys.id, keyId), eq(apiKeys.userId, user.id))
     );
 

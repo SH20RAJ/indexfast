@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { upsertSubscription, syncUserPlanFromSubscription, setCustomerId } from '@/lib/subscription-utils';
 import crypto from 'crypto';
 import type { DodoSubscription, DodoCustomer, DodoWebhookEvent } from '@/lib/dodo-client';
+import { getDodoConfig } from '@/lib/dodo-config';
 
 /**
  * Verify Dodo Payments Webhook Signature
@@ -31,7 +32,7 @@ function verifySignature(payload: string, signature: string, secret: string): bo
 export async function POST(request: NextRequest) {
   try {
     const signature = request.headers.get('x-dodo-signature');
-    const webhookSecret = process.env.DODO_WEBHOOK_SECRET;
+    const { webhookSecret } = getDodoConfig();
 
     if (!webhookSecret) {
       console.error('Dodo webhook secret not configured');

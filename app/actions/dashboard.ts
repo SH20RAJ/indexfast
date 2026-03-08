@@ -12,28 +12,47 @@ function generateIndexNowKey(): string {
     return globalThis.crypto.randomUUID().replace(/-/g, '');
 }
 
+type SiteRow = typeof sites.$inferSelect;
+
+export interface SiteCamelCase {
+    id: string;
+    userId: string;
+    domain: string;
+    gscSiteUrl: string;
+    permissionLevel: string | null;
+    sitemapCount: number | null;
+    isVerified: boolean;
+    autoIndex: boolean;
+    indexNowKey: string | null;
+    indexNowKeyLocation: string | null;
+    indexNowKeyVerified: boolean;
+    lastSyncAt: Date | null;
+    triggerSecret: string | null;
+    createdAt: Date;
+}
+
 // Helper to map snake_case DB rows to CamelCase for the UI
-function mapSiteToCamelCase(row: any) {
-    if (!row) return row;
+function mapSiteToCamelCase(row: Record<string, any> | null | undefined): SiteCamelCase {
+    if (!row) return row as any;
     return {
-        id: row.id,
-        userId: row.user_id,
-        domain: row.domain,
-        gscSiteUrl: row.gsc_site_url,
-        permissionLevel: row.permission_level,
-        sitemapCount: row.sitemap_count,
-        isVerified: row.is_verified,
-        autoIndex: row.auto_index,
-        indexNowKey: row.index_now_key,
-        indexNowKeyLocation: row.index_now_key_location,
-        indexNowKeyVerified: row.index_now_key_verified,
-        lastSyncAt: row.last_sync_at,
-        triggerSecret: row.trigger_secret,
-        createdAt: row.created_at
+        id: row.id as string,
+        userId: (row.user_id || row.userId) as string,
+        domain: row.domain as string,
+        gscSiteUrl: (row.gsc_site_url || row.gscSiteUrl) as string,
+        permissionLevel: (row.permission_level || row.permissionLevel) as string | null,
+        sitemapCount: (row.sitemap_count || row.sitemapCount) as number | null,
+        isVerified: (row.is_verified ?? row.isVerified ?? false) as boolean,
+        autoIndex: (row.auto_index ?? row.autoIndex ?? false) as boolean,
+        indexNowKey: (row.index_now_key || row.indexNowKey) as string | null,
+        indexNowKeyLocation: (row.index_now_key_location || row.indexNowKeyLocation) as string | null,
+        indexNowKeyVerified: (row.index_now_key_verified ?? row.indexNowKeyVerified ?? false) as boolean,
+        lastSyncAt: (row.last_sync_at || row.lastSyncAt) as Date | null,
+        triggerSecret: (row.trigger_secret || row.triggerSecret) as string | null,
+        createdAt: (row.created_at || row.createdAt) as Date
     };
 }
 
-async function getOrCreateUser(stackUser: any) {
+async function getOrCreateUser(stackUser: { id: string; primaryEmail?: string | null }) {
     if (!stackUser) return null;
 
     try {
@@ -46,7 +65,7 @@ async function getOrCreateUser(stackUser: any) {
         // Create new user with default free plan
         const newUser = await db.insert(users).values({
             id: stackUser.id,
-            email: stackUser.primaryEmail,
+            email: stackUser.primaryEmail || "unknown",
             plan: 'free',
             credits: 10,
         }).returning();
@@ -74,7 +93,7 @@ export async function getDashboardData() {
     const dbUser = await getOrCreateUser(stackUser);
     
     // Fetch sites
-    let userSites: any[] = [];
+    let userSites: (SiteRow | SiteCamelCase)[] = [];
     try {
       userSites = await db
         .select()
@@ -85,14 +104,13 @@ export async function getDashboardData() {
       console.error("Error fetching sites:", e);
       if (e.message?.includes('column "index_now_key" does not exist')) {
         // Fallback for missing columns during migration
-        const rows = (await db.execute(sql`
+        const result = (await db.execute(sql`
           SELECT id, user_id, domain, gsc_site_url, permission_level, sitemap_count, is_verified, auto_index, last_sync_at, created_at 
           FROM sites 
           WHERE user_id = ${stackUser.id} 
           ORDER BY created_at DESC
-        `)) as any;
-        const resultRows = Array.isArray(rows) ? rows : (rows.rows || []);
-        userSites = resultRows.map(mapSiteToCamelCase);
+        `)) as unknown as Record<string, unknown>[];
+        userSites = result.map(mapSiteToCamelCase);
       } else {
         throw e;
       }
@@ -293,14 +311,13 @@ export async function getSiteDetails(domain: string) {
             console.error("Error fetching site details:", e);
             if (e.message?.includes('column "index_now_key" does not exist')) {
                 // Fallback for missing columns during migration
-                const rows = (await db.execute(sql`
+                const result = (await db.execute(sql`
                     SELECT id, user_id, domain, gsc_site_url, permission_level, sitemap_count, is_verified, auto_index, last_sync_at, created_at 
                     FROM sites 
                     WHERE domain = ${domain} AND user_id = ${user.id} 
                     LIMIT 1
-                `)) as any;
-                const resultRows = Array.isArray(rows) ? rows : (rows.rows || []);
-                site = mapSiteToCamelCase(resultRows[0]);
+                `)) as unknown as Record<string, unknown>[];
+                site = mapSiteToCamelCase(result[0]);
             } else {
                 throw e;
             }

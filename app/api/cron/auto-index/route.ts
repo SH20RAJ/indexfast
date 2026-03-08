@@ -3,7 +3,7 @@ import { XMLParser } from 'fast-xml-parser';
 import db from "@/lib/db";
 import { sites, users, submissions, usageLogs } from "@/lib/schema";
 import { eq, sql } from "drizzle-orm";
-import { getIndexNowHost, getIndexNowKeyLocation, chunkArray, submitToIndexNow } from "@/lib/url-utils";
+import { getIndexNowHost, getDisplayDomain, getIndexNowKeyLocation, chunkArray, submitToIndexNow } from "@/lib/url-utils";
 
 export async function GET(request: Request) {
   // 1. Verify Vercel Cron or Secret Query Param
@@ -67,8 +67,9 @@ export async function GET(request: Request) {
         const availableCredits = dbUser.credits; 
 
         // Extract Sitemap
-        const protocol = site.domain.startsWith('http') ? '' : 'https://';
-        const targetSitemapUrl = `${protocol}${site.domain}/sitemap.xml`;
+        const displayDomain = getDisplayDomain(site.domain);
+        const protocol = displayDomain.startsWith('http') ? '' : 'https://';
+        const targetSitemapUrl = `${protocol}${displayDomain}/sitemap.xml`;
         const allUrls: string[] = [];
 
         try {
@@ -111,7 +112,7 @@ export async function GET(request: Request) {
         }
 
         if (allUrls.length === 0) {
-            allUrls.push(site.domain);
+            allUrls.push(displayDomain);
         }
 
         // Limit URLs to available credits
