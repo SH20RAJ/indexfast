@@ -65,6 +65,12 @@ export async function GET(request: Request) {
             continue;
         }
 
+        // Strictly require Pro or Business for auto-indexing
+        if (dbUser.plan !== 'pro' && dbUser.plan !== 'business') {
+            results.push({ site: site.domain, status: 'skipped', reason: 'Requires Pro/Business plan' });
+            continue;
+        }
+
         // Enforce actual user credits
         const availableCredits = dbUser.credits; 
 

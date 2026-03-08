@@ -4,6 +4,7 @@ import { HowItWorks } from '@/components/landing/how-it-works'
 import { Testimonials } from '@/components/landing/testimonials'
 import { Pricing } from '@/components/landing/pricing'
 import { FAQ } from '@/components/landing/faq'
+import { ContextSearchFeature } from '@/components/landing/context-search-feature'
 import { Metadata } from 'next'
 import baseMetadata from '@/lib/metadata'
 
@@ -19,6 +20,7 @@ export default function LandingPage() {
       <Hero />
       <HowItWorks />
       <Features />
+      <ContextSearchFeature />
       <Testimonials />
       <Pricing />
       <FAQ />

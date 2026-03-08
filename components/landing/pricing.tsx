@@ -5,6 +5,7 @@ import { CreativePricing, type PricingTier } from '@/components/ui/creative-pric
 import { Rocket, Sparkles, Zap } from 'lucide-react'
 import { CreativeButton } from '@/components/ui/creative-button'
 import Link from 'next/link'
+import { handleCheckout } from '@/lib/checkout-utils'
 
 interface PricingProps {
   currentPlan?: 'free' | 'pro' | 'business';
@@ -17,7 +18,7 @@ export function Pricing({ isAuthenticated = false }: PricingProps) {
       name: "Free",
       icon: <Rocket className="w-6 h-6" />,
       price: 0,
-      description: "Perfect for hobbyists and improved indexing.",
+      description: "Forever Free. No credit card required.",
       features: [
         "1 Verified Site",
         "10 Submissions / day",
@@ -26,7 +27,7 @@ export function Pricing({ isAuthenticated = false }: PricingProps) {
       ],
       color: "blue",
       customButton: (
-        <Link href="/dashboard">
+        <Link href="/dashboard" className="w-full">
           <CreativeButton variant="outline" className="w-full">
             Go to Dashboard
           </CreativeButton>
@@ -47,18 +48,17 @@ export function Pricing({ isAuthenticated = false }: PricingProps) {
       ],
       popular: true,
       color: "amber",
-      customButton: !isAuthenticated ? (
-        <Link href="/login">
-          <CreativeButton variant="primary" className="w-full">
-            Get Started
-          </CreativeButton>
-        </Link>
-      ) : (
-        <Link href="/dashboard">
-          <CreativeButton variant="primary" className="w-full">
-            Included in Free Beta
-          </CreativeButton>
-        </Link>
+      customButton: (
+        <CreativeButton 
+          variant="primary" 
+          className="w-full"
+          onClick={() => {
+            if (!isAuthenticated) window.location.href = "/login";
+            else handleCheckout(process.env.NEXT_PUBLIC_DODO_PRO_PRODUCT_ID || "pdt_pro", "pro");
+          }}
+        >
+          {isAuthenticated ? "Upgrade to Pro" : "Get Started"}
+        </CreativeButton>
       )
     },
     {
@@ -75,8 +75,15 @@ export function Pricing({ isAuthenticated = false }: PricingProps) {
       ],
       color: "purple",
       customButton: (
-        <CreativeButton variant="outline" disabled className="w-full opacity-50 cursor-not-allowed">
-          Coming Soon (Post-Beta)
+        <CreativeButton 
+          variant="outline" 
+          className="w-full"
+          onClick={() => {
+            if (!isAuthenticated) window.location.href = "/login";
+            else handleCheckout(process.env.NEXT_PUBLIC_DODO_BUSINESS_PRODUCT_ID || "pdt_business", "business");
+          }}
+        >
+          {isAuthenticated ? "Contact Sales" : "Get Started"}
         </CreativeButton>
       )
     }
@@ -91,8 +98,8 @@ export function Pricing({ isAuthenticated = false }: PricingProps) {
         <span className="font-handwritten text-9xl">$</span>
       </div>
       <CreativePricing 
-        title="Simple, Transparent Pricing"
-        description="We are currently in Beta. Enjoy unlimited access to Pro features for free!"
+        title="Ready to outrank the competition?"
+        description="Choose the plan that fits your growth. No hidden fees, cancel anytime."
         tiers={pricingTiers}
       />
     </section>

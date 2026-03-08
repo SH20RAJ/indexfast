@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   }
 }
 
+import { CommandMenu } from "@/components/dashboard/command-menu";
+
 export default async function DashboardLayout({
   children,
 }: {
@@ -33,6 +35,7 @@ export default async function DashboardLayout({
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar sites={sites} />
+      <CommandMenu sites={sites} />
       <main className="flex-1 overflow-y-auto p-4 lg:p-8 pt-16 lg:pt-8 bg-background">
         {children}
       </main>
