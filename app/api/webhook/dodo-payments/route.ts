@@ -1,8 +1,11 @@
 import { Webhooks } from "@dodopayments/nextjs";
 import { upsertSubscription, setCustomerId } from "@/lib/subscription-utils";
+import { getDodoConfig } from "@/lib/dodo-config";
+
+const config = getDodoConfig();
 
 export const POST = Webhooks({
-  webhookKey: process.env.DODO_WEBHOOK_SECRET || "YmFzZTY0LWZhbGxiYWNrLXNlY3JldC1mb3ItYnVpbGQ=", // base64 for 'base64-fallback-secret-for-build'
+  webhookKey: config.webhookSecret || "YmFzZTY0LWZhbGxiYWNrLXNlY3JldC1mb3ItYnVpbGQ=", // base64 for 'base64-fallback-secret-for-build'
   onPayload: async (payload) => {
     // This runs for every event. Useful for logging.
     console.log("Dodo Webhook received:", payload.type);

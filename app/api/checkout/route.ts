@@ -1,5 +1,6 @@
 import { Checkout } from "@dodopayments/nextjs";
 import { stackServerApp } from "@/stack/server";
+import { getDodoConfig } from "@/lib/dodo-config";
 
 export const POST = async (req: Request) => {
   const user = await stackServerApp.getUser();
@@ -29,10 +30,12 @@ export const POST = async (req: Request) => {
     }
   };
 
+  const config = getDodoConfig();
+
   return Checkout({
-    bearerToken: process.env.DODO_PAYMENTS_API_KEY!,
-    returnUrl: process.env.DODO_PAYMENTS_RETURN_URL || `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
-    environment: (process.env.DODO_PAYMENTS_ENVIRONMENT as any) || "test_mode",
+    bearerToken: config.apiKey!,
+    returnUrl: config.returnUrl,
+    environment: config.environment as any,
     type: "session",
   })(payload as any);
 };
