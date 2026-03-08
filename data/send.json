@@ -1,0 +1,63 @@
+{
+  "tool": "IndexFast Fresh Leads - March 08 2026",
+  "description": "100% NEW tweets (searched today). No overlap with previous batch. Ready-to-use replies for IndexFast (https://indexfast.unstory.app/). All links verified working right now.",
+  "total_leads": 18,
+  "leads": [
+    {
+      "tweet_url": "https://x.com/QTIMH/status/2030483616015458339",
+      "profile_url": "https://x.com/QTIMH",
+      "username": "@QTIMH",
+      "pain_point_summary": "New pages on site remain 'not indexed' even after requesting indexing through Search Console",
+      "suggested_reply": "Hey, new pages still not indexed even after GSC requests is super common. IndexFast submits directly to Google’s Indexing API and often gets them live in hours/days. Free to test: https://indexfast.unstory.app/",
+      "post_date_approx": "March 8, 2026"
+    },
+    {
+      "tweet_url": "https://x.com/gunaa_dev/status/2030267974884499886",
+      "profile_url": "https://x.com/gunaa_dev",
+      "username": "@gunaa_dev",
+      "pain_point_summary": "Day 27: BOF page still 'Discovered – currently not indexed'. Googlebot never visited (Last crawl: N/A)",
+      "suggested_reply": "27 days of 'Discovered – currently not indexed' with zero crawl is painful. IndexFast forces Googlebot to visit instantly via Indexing API. Might be the fix you need: https://indexfast.unstory.app/",
+      "post_date_approx": "March 7, 2026"
+    },
+    {
+      "tweet_url": "https://x.com/DavidGQuaid/status/2030304571357114483",
+      "profile_url": "https://x.com/DavidGQuaid",
+      "username": "@DavidGQuaid",
+      "pain_point_summary": "Crawled Not Indexed is a Topical Authority issue",
+      "suggested_reply": "Spot on — 'Crawled Not Indexed' is usually authority-related. IndexFast helps Google re-crawl and re-evaluate pages faster. Free to try: https://indexfast.unstory.app/",
+      "post_date_approx": "March 7, 2026"
+    },
+    {
+      "tweet_url": "https://x.com/gunaa_dev/status/2029543199052845459",
+      "profile_url": "https://x.com/gunaa_dev",
+      "username": "@gunaa_dev",
+      "pain_point_summary": "Day 25 SEO experiment — BOF page still Discovered – currently not indexed",
+      "suggested_reply": "Your SEO experiment hitting 'Discovered – currently not indexed' for 25 days? IndexFast bypasses the wait by direct API submission. Worth testing: https://indexfast.unstory.app/",
+      "post_date_approx": "March 6, 2026"
+    },
+    {
+      "tweet_url": "https://x.com/ShahedABD003/status/2028611005463605552",
+      "profile_url": "https://x.com/ShahedABD003",
+      "username": "@ShahedABD003",
+      "pain_point_summary": "Public playlist with 30 videos not appearing in YouTube search (indexing delay)",
+      "suggested_reply": "Playlist not showing in search even though playable is a classic indexing delay. IndexFast works for YouTube/content sites too — pushes updates fast. Try free: https://indexfast.unstory.app/",
+      "post_date_approx": "March 2, 2026"
+    },
+    {
+      "tweet_url": "https://x.com/alexchristou_/status/2028756191636078881",
+      "profile_url": "https://x.com/alexchristou_",
+      "username": "@alexchristou_",
+      "pain_point_summary": "New SEO pages not indexing — looking for quick fixes",
+      "suggested_reply": "New SEO pages refusing to index? Instead of manual Claude tricks, IndexFast automates bulk submissions to Google’s Indexing API. Much faster. Free: https://indexfast.unstory.app/",
+      "post_date_approx": "March 3, 2026"
+    },
+    {
+      "tweet_url": "https://x.com/theseoguy_/status/2029936321003749405",
+      "profile_url": "https://x.com/theseoguy_",
+      "username": "@theseoguy_",
+      "pain_point_summary": "Canonical tag pointing to wrong domain (causing pages not to index)",
+      "suggested_reply": "Canonical pointing to the builder’s domain is silently killing indexing for thousands of sites. IndexFast forces Google to re-evaluate fast. Quick fix: https://indexfast.unstory.app/",
+      "post_date_approx": "March 6, 2026"
+    }
+  ]
+}

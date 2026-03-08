@@ -65,8 +65,8 @@ export async function GET(request: Request) {
             continue;
         }
 
-        // Apply Free Beta Mock limits (Unlimited Pro)
-        const availableCredits = 999999; 
+        // Enforce actual user credits
+        const availableCredits = dbUser.credits; 
 
         // Extract Sitemap
         const protocol = site.domain.startsWith('http') ? '' : 'https://';
@@ -133,6 +133,14 @@ export async function GET(request: Request) {
         const submissionResult = await submitToIndexNow(host, site.indexNowKey, keyLocation, urlsToSubmit);
 
         if (submissionResult.success) {
+            // Deduct credits from user
+            await db.update(users)
+                .set({
+                    credits: sql`${users.credits} - ${urlsToSubmit.length}`,
+                    updatedAt: new Date()
+                })
+                .where(eq(users.id, dbUser.id));
+
             // Log submission (Upsert to prevent unique constraint violations)
             await db.insert(usageLogs)
                 .values({

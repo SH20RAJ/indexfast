@@ -31,8 +31,8 @@ const siteNavItems = [
 // Global nav items (always visible)
 const globalNavItems = [
     { title: "All Sites", href: "/dashboard/sites", icon: Globe },
-    { title: "Backlinks", href: "/dashboard/resources/backlinks", icon: Link2 },
-    { title: "Tools", href: "/dashboard/resources/tools", icon: Wrench },
+    { title: "Backlinks", href: "/dashboard/backlinks", icon: Link2 },
+    { title: "Tools", href: "/dashboard/tools", icon: Wrench },
     { title: "Billing", href: "/dashboard/billing", icon: CreditCard },
     { title: "API Keys", href: "/dashboard/settings/api-keys", icon: Key },
     { title: "Account", href: "/dashboard/settings", icon: Settings },

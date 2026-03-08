@@ -41,12 +41,12 @@ async function getOrCreateUser(stackUser: any) {
             return existingUser[0];
         }
 
-        // Create new user (Mocking Pro for all users)
+        // Create new user with default free plan
         const newUser = await db.insert(users).values({
             id: stackUser.id,
             email: stackUser.primaryEmail,
-            plan: 'pro', 
-            credits: 999999, // Unlimited credits mock
+            plan: 'free',
+            credits: 10,
         }).returning();
 
         return newUser[0];

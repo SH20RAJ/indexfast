@@ -5,7 +5,7 @@ import { CheckCircle2, Zap, BarChart3 } from 'lucide-react'
 
 export function Features() {
   return (
-    <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-features transition-colors duration-300">
+    <section id="features" className="w-full py-24 md:py-32 bg-[#0A0A0B] transition-colors duration-300 border-t border-white/5">
       <div className="container px-4 md:px-6">
         <div className="text-center mb-16">
             <h2 className="font-handwritten text-4xl md:text-5xl font-bold mb-4 text-foreground">Why IndexFast?</h2>
