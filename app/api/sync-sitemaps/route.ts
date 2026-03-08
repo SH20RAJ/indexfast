@@ -141,9 +141,10 @@ export async function POST(request: Request) {
             success: false
         }, { status: 400 });
     }
-    const host = site.domain.replace('https://', '').replace('http://', '').split('/')[0];
+    const host = site.domain.replace('sc-domain:', '').replace('https://', '').replace('http://', '').split('/')[0];
     const protocol = site.domain.startsWith('http') ? '' : 'https://';
-    const defaultLocation = `${protocol}${site.domain}/${indexNowKey}.txt`;
+    const displayDomain = site.domain.replace('sc-domain:', '');
+    const defaultLocation = `${protocol}${displayDomain}/${indexNowKey}.txt`;
     const keyLocation = site.indexNowKeyLocation || defaultLocation; // Favor custom location
     
     const submissionResult = await submitToIndexNow(host, indexNowKey, keyLocation, urlsToSubmit);

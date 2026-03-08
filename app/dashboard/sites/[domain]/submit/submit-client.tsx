@@ -5,13 +5,14 @@ import { DashCard, DashStat } from "@/components/dashboard/dash-card";
 import { DashButton } from "@/components/dashboard/dash-button";
 import {
     Send, Info, Link2, FileText, Globe, Code, CheckCircle2, XCircle,
-    AlertTriangle, Zap, Copy, Check, Clock, ChevronDown, ChevronUp
+    AlertTriangle, Zap, Copy, Check, Clock, ChevronDown, ChevronUp, Shield
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { fetchExternalSitemap } from "@/app/actions/sitemaps";
+import { verifyIndexNowKey } from "@/app/actions/dashboard";
 
 type SubmitMode = "manual" | "sitemap" | "api";
 type UrlStatus = "valid" | "invalid" | "duplicate";
@@ -32,6 +33,8 @@ export default function SubmitClient({ site }: { site: { id: string; domain: str
     const [copied, setCopied] = useState<string | null>(null);
     const [showApiExamples, setShowApiExamples] = useState(false);
     const [priority, setPriority] = useState<"normal" | "high">("normal");
+    const [verifyingKey, setVerifyingKey] = useState(false);
+    const [isVerified, setIsVerified] = useState(false);
 
     // Parse & validate URLs
     const parsedUrls: ParsedUrl[] = useMemo(() => {
@@ -114,6 +117,22 @@ export default function SubmitClient({ site }: { site: { id: string; domain: str
             toast.error("Failed to fetch sitemap", { description: "Network error occurred. Try pasting URLs manually." });
         }
         setFetchingSitemap(false);
+    };
+
+    const handleVerifyKey = async () => {
+        setVerifyingKey(true);
+        try {
+            const res = await verifyIndexNowKey(site.id);
+            if (res.success) {
+                toast.success("Key Verified!", { description: res.message });
+                setIsVerified(true);
+            } else {
+                toast.error("Verification Failed", { description: res.error || res.message });
+            }
+        } catch {
+            toast.error("Verification error occurred");
+        }
+        setVerifyingKey(false);
     };
 
     const copyToClipboard = useCallback(async (text: string, key: string) => {
@@ -274,14 +293,24 @@ print(response.json())`;
                                 </div>
                             )}
                         </div>
-                        <DashButton
-                            onClick={handleSubmit}
-                            disabled={validUrls.length === 0}
-                            loading={submitting}
-                            icon={<Send className="w-4 h-4" />}
-                        >
-                            Submit {validUrls.length > 0 ? validUrls.length : ""} URL{validUrls.length !== 1 ? "s" : ""}
-                        </DashButton>
+                        <div className="flex items-center gap-2">
+                            <DashButton
+                                variant="outline"
+                                onClick={handleVerifyKey}
+                                loading={verifyingKey}
+                                icon={isVerified ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Shield className="w-4 h-4" />}
+                            >
+                                {isVerified ? "Verified" : "Verify Key"}
+                            </DashButton>
+                            <DashButton
+                                onClick={handleSubmit}
+                                disabled={validUrls.length === 0}
+                                loading={submitting}
+                                icon={<Send className="w-4 h-4" />}
+                            >
+                                Submit {validUrls.length > 0 ? validUrls.length : ""} URL{validUrls.length !== 1 ? "s" : ""}
+                            </DashButton>
+                        </div>
                     </div>
                 </DashCard>
             )}

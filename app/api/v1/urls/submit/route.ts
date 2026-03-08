@@ -86,7 +86,8 @@ export async function POST(request: NextRequest) {
     try {
         const host = new URL(urls[0]).hostname;
         const protocol = urls[0].startsWith('http:') ? 'http://' : 'https://';
-        const defaultLocation = `${protocol}${host}/${INDEXNOW_KEY}.txt`;
+        const displayDomain = site.domain.replace('sc-domain:', '');
+        const defaultLocation = `${protocol}${displayDomain}/${INDEXNOW_KEY}.txt`;
         const keyLocation = site.indexNowKeyLocation || defaultLocation;
         
         const indexNowPayload = {

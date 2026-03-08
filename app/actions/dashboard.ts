@@ -437,3 +437,42 @@ export async function updateIndexNowSettings(siteId: string, customKey: string, 
         return { success: false, error: (error as Error).message };
     }
 }
+
+export async function verifyIndexNowKey(siteId: string) {
+    const user = await stackServerApp.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    try {
+        const site = await db.query.sites.findFirst({
+            where: and(eq(sites.id, siteId), eq(sites.userId, user.id))
+        });
+        
+        if (!site || !site.indexNowKey) throw new Error("Site or key not found");
+
+        const protocol = site.domain.startsWith('http') ? '' : 'https://';
+        const displayDomain = site.domain.replace('sc-domain:', '');
+        const defaultLocation = `${protocol}${displayDomain}/${site.indexNowKey}.txt`;
+        const keyLocation = site.indexNowKeyLocation || defaultLocation;
+
+        const response = await fetch(keyLocation, { cache: 'no-store' });
+        if (!response.ok) {
+            throw new Error(`Failed to fetch key from ${keyLocation} (Status: ${response.status})`);
+        }
+
+        const text = await response.text();
+        const isValid = text.trim() === site.indexNowKey;
+
+        if (isValid) {
+            await db.update(sites).set({ indexNowKeyVerified: true }).where(eq(sites.id, siteId));
+        }
+
+        return { 
+            success: isValid, 
+            message: isValid ? "Key verified successfully!" : "Key found but content does not match.",
+            location: keyLocation
+        };
+    } catch (error) {
+        console.error("Verify IndexNow Key Error:", error);
+        return { success: false, error: (error as Error).message };
+    }
+}
