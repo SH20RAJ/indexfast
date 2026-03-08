@@ -37,14 +37,17 @@ export function OverviewActions({ site }: { site: SiteData }) {
     };
 
     return (
-        <div className="flex items-center justify-between">
-            <span className={`text-3xl font-bold tracking-tight ${autoIndex ? "text-emerald-400" : "text-muted-foreground/50"}`}>
-                {autoIndex ? "On" : "Off"}
-            </span>
+        <div className="flex items-center justify-between mt-1">
+            <div className="flex flex-col">
+                <span className={`text-2xl font-bold tracking-tight ${autoIndex ? "text-emerald-400" : "text-muted-foreground/30"}`}>
+                    {autoIndex ? "Active" : "Disabled"}
+                </span>
+                <span className="text-[10px] text-muted-foreground/40 font-medium">Auto-sync on sync</span>
+            </div>
             <button onClick={handleToggle} className="hover:opacity-80 transition-opacity">
                 {autoIndex
-                    ? <ToggleRight className="w-7 h-7 text-emerald-400" />
-                    : <ToggleLeft className="w-7 h-7 text-muted-foreground/40" />
+                    ? <ToggleRight className="w-8 h-8 text-emerald-400" />
+                    : <ToggleLeft className="w-8 h-8 text-muted-foreground/20" />
                 }
             </button>
         </div>

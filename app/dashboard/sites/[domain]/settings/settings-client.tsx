@@ -7,10 +7,11 @@ import {
     ToggleLeft, ToggleRight, Trash2, Shield, AlertCircle, Key,
     Copy, Check, RefreshCw, ExternalLink, CheckCircle2, XCircle, Info
 } from "lucide-react";
-import { toggleAutoIndex, regenerateIndexNowKey } from "@/app/actions/dashboard";
+import { toggleAutoIndex, regenerateIndexNowKey, verifyIndexNowKey } from "@/app/actions/dashboard";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { getIndexNowKeyLocation } from "@/lib/url-utils";
 
 interface SiteData {
     id: string; domain: string; gscSiteUrl: string; isVerified: boolean;
@@ -67,21 +68,16 @@ export default function SiteSettingsClient({ site }: { site: SiteData }) {
     const handleVerifyKey = async () => {
         setVerifying(true);
         try {
-            const res = await fetch("/api/verify-indexnow-key", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ siteId: site.id }),
-            });
-            const data = await res.json();
-            if (data.verified) {
+            const res = await verifyIndexNowKey(site.id);
+            if (res.success) {
                 setKeyVerified(true);
-                toast.success("IndexNow key verified!", { description: "Your key file was found and matches." });
+                toast.success("IndexNow key verified!", { description: res.message });
             } else {
                 setKeyVerified(false);
-                toast.error("Verification failed", { description: data.error });
+                toast.error("Verification failed", { description: res.error || res.message });
             }
-        } catch {
-            toast.error("Verification failed", { description: "Network error" });
+        } catch (e: unknown) {
+            toast.error("Verification failed", { description: (e as Error).message });
         }
         setVerifying(false);
     };
@@ -125,8 +121,8 @@ export default function SiteSettingsClient({ site }: { site: SiteData }) {
         setSavingKey(false);
     };
 
-    const domain = site.domain.replace(/^https?:\/\//, "").replace(/\/+$/, "");
-    const keyFileUrl = `https://${domain}/${indexNowKey}.txt`;
+    // const domain = getDisplayDomain(site.domain);
+    const keyFileUrl = getIndexNowKeyLocation(site) || "";
 
     return (
         <div className="space-y-8 max-w-3xl animate-in fade-in duration-500">

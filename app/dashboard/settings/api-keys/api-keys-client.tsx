@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DashCard } from "@/components/dashboard/dash-card";
 import { DashButton } from "@/components/dashboard/dash-button";
-import { Key, Plus, Trash2, Copy, Check, AlertTriangle, Loader2 } from "lucide-react";
+import { Key, Plus, Trash2, Copy, Check, AlertTriangle, Code2, Globe, ShieldCheck } from "lucide-react";
 import { createApiKey, revokeApiKey } from "@/app/actions/api-keys";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -133,10 +133,30 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKeyInfo
                 </div>
             )}
 
-            {/* Quick Start */}
-            <DashCard className="p-5 space-y-3">
-                <h3 className="text-sm font-semibold">Quick Start</h3>
-                <pre className="text-xs font-mono bg-muted/20 p-4 rounded-lg border border-border/30 overflow-x-auto text-muted-foreground/70">
+            {/* Documentation / Quick Start */}
+            <DashCard className="p-0 overflow-hidden border-primary/10 shadow-lg shadow-primary/5">
+                <div className="bg-primary/5 border-b border-border/50 p-4 flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                        <Code2 className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-semibold">API Quick Start</h3>
+                        <p className="text-[11px] text-muted-foreground">Programmatic indexing for your workflows</p>
+                    </div>
+                </div>
+                <div className="p-5 space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">Base Endpoint</label>
+                        <div className="flex items-center gap-2 p-2 rounded-md bg-muted/30 border border-border/20 font-mono text-xs">
+                            <Globe className="w-3 h-3 text-muted-foreground" />
+                            <span className="text-primary/70">https://indexfast.dev/api/v1/urls/submit</span>
+                        </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">cURL Example</label>
+                        <div className="relative group">
+                            <pre className="text-xs font-mono bg-[#0D0E11] p-5 rounded-xl border border-white/5 overflow-x-auto text-emerald-400/80 leading-relaxed">
 {`curl -X POST https://indexfast.dev/api/v1/urls/submit \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
@@ -144,10 +164,26 @@ export default function ApiKeysClient({ initialKeys }: { initialKeys: ApiKeyInfo
     "site_id": "your-site-id",
     "urls": ["https://example.com/page-1"]
   }'`}
-                </pre>
-                <p className="text-[11px] text-muted-foreground/40">
-                    Replace <code className="px-1 py-0.5 rounded bg-muted/30 text-[10px]">YOUR_API_KEY</code> with your key. API access requires Pro+.
-                </p>
+                            </pre>
+                            <button 
+                                onClick={() => {
+                                    navigator.clipboard.writeText(`curl -X POST https://indexfast.dev/api/v1/urls/submit \\\n  -H "Authorization: Bearer YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "site_id": "your-site-id",\n    "urls": ["https://example.com/page-1"]\n  }'`);
+                                    toast.success("Example copied");
+                                }}
+                                className="absolute top-3 right-3 p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                            >
+                                <Copy className="w-4 h-4 text-emerald-400/50" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
+                        <ShieldCheck className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-blue-300/70 leading-normal">
+                            All API requests must be sent over HTTPS. Programmatic access requires a <span className="text-blue-400 font-semibold">Pro</span> or <span className="text-blue-400 font-semibold">Business</span> subscription. Credits are deducted per successful URL submission.
+                        </p>
+                    </div>
+                </div>
             </DashCard>
         </div>
     );

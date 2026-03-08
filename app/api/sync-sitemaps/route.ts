@@ -4,6 +4,7 @@ import { XMLParser } from 'fast-xml-parser'
 import db from "@/lib/db"
 import { sites, submissions, usageLogs } from "@/lib/schema"
 import { eq, sql } from "drizzle-orm"
+import { getIndexNowHost, getIndexNowKeyLocation } from "@/lib/url-utils"
 
 // Helper to submit to IndexNow
 async function submitToIndexNow(host: string, key: string, keyLocation: string | null, urlList: string[]) {
@@ -141,11 +142,8 @@ export async function POST(request: Request) {
             success: false
         }, { status: 400 });
     }
-    const host = site.domain.replace('sc-domain:', '').replace('https://', '').replace('http://', '').split('/')[0];
-    const protocol = site.domain.startsWith('http') ? '' : 'https://';
-    const displayDomain = site.domain.replace('sc-domain:', '');
-    const defaultLocation = `${protocol}${displayDomain}/${indexNowKey}.txt`;
-    const keyLocation = site.indexNowKeyLocation || defaultLocation; // Favor custom location
+    const host = getIndexNowHost(site.domain);
+    const keyLocation = getIndexNowKeyLocation(site);
     
     const submissionResult = await submitToIndexNow(host, indexNowKey, keyLocation, urlsToSubmit);
 

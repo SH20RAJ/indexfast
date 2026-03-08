@@ -3,6 +3,7 @@ import db from "@/lib/db";
 import { sites } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { stackServerApp } from "@/stack/server";
+import { getIndexNowKeyLocation } from "@/lib/url-utils";
 
 export async function POST(request: NextRequest) {
     try {
@@ -29,9 +30,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "No IndexNow key configured" }, { status: 400 });
         }
 
-        // Try to fetch the key file from the user's domain
-        const domain = site.domain.replace(/^https?:\/\//, "").replace(/\/+$/, "");
-        const keyUrl = `https://${domain}/${site.indexNowKey}.txt`;
+        const keyUrl = getIndexNowKeyLocation(site);
+        if (!keyUrl) {
+            return NextResponse.json({ error: "Invalid key location" }, { status: 400 });
+        }
 
         try {
             const res = await fetch(keyUrl, {
@@ -64,7 +66,8 @@ export async function POST(request: NextRequest) {
                     keyUrl,
                 });
             }
-        } catch (fetchError) {
+        } catch (error) {
+            console.error("Verification fetch error:", error);
             return NextResponse.json({
                 verified: false,
                 error: `Could not reach ${keyUrl}. Make sure the file is publicly accessible.`,

@@ -4,6 +4,7 @@ import db from "@/lib/db";
 import { sites, submissions } from "@/lib/schema";
 import { eq, and } from "drizzle-orm";
 import { deductCredit } from "@/app/actions/dashboard";
+import { getIndexNowHost, getIndexNowKeyLocation } from "@/lib/url-utils";
 
 export async function POST(request: NextRequest) {
     // Auth
@@ -84,11 +85,8 @@ export async function POST(request: NextRequest) {
     let failed = 0;
 
     try {
-        const host = new URL(urls[0]).hostname;
-        const protocol = urls[0].startsWith('http:') ? 'http://' : 'https://';
-        const displayDomain = site.domain.replace('sc-domain:', '');
-        const defaultLocation = `${protocol}${displayDomain}/${INDEXNOW_KEY}.txt`;
-        const keyLocation = site.indexNowKeyLocation || defaultLocation;
+        const host = getIndexNowHost(site.domain);
+        const keyLocation = getIndexNowKeyLocation(site);
         
         const indexNowPayload = {
             host,
