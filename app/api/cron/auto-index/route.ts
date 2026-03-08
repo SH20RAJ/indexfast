@@ -3,54 +3,45 @@ import { XMLParser } from 'fast-xml-parser';
 import db from "@/lib/db";
 import { sites, users, submissions, usageLogs } from "@/lib/schema";
 import { eq, sql } from "drizzle-orm";
-import { getIndexNowHost, getIndexNowKeyLocation } from "@/lib/url-utils";
-
-// Helper to submit to IndexNow
-async function submitToIndexNow(host: string, key: string, keyLocation: string | null, urlList: string[]) {
-  try {
-    const response = await fetch('https://api.indexnow.org/indexnow', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        host,
-        key,
-        keyLocation,
-        urlList
-      })
-    });
-    return { success: response.ok, status: response.status, message: response.statusText };
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : 'Unknown error';
-    return { success: false, status: 500, message: msg };
-  }
-}
+import { getIndexNowHost, getIndexNowKeyLocation, chunkArray, submitToIndexNow } from "@/lib/url-utils";
 
 export async function GET(request: Request) {
-  // 1. Verify Vercel Cron
-  // Only allow requests that have the Vercel cron header or a valid dev setup
+  // 1. Verify Vercel Cron or Secret Query Param
+  const url = new URL(request.url);
+  const secretParam = url.searchParams.get('secret');
+  
   const authHeader = request.headers.get('authorization');
   const isVercelCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+  const isValidSecret = secretParam === process.env.CRON_SECRET;
   
-  // You might also want to allow manual triggers in dev mode
-  if (!isVercelCron && process.env.NODE_ENV === 'production') {
-     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isVercelCron && !isValidSecret && process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    // 2. Fetch all sites with autoIndex enabled
-    const autoIndexSites = await db.query.sites.findMany({
-        where: eq(sites.autoIndex, true)
-    });
+    // 2. Fetch sites with autoIndex enabled OR the specific site if secret matches its triggerSecret
+    let targetSites: (typeof sites.$inferSelect)[] = [];
+    if (secretParam && secretParam !== process.env.CRON_SECRET) {
+        // Assume it might be a per-site trigger secret
+        const siteBySecret = await db.query.sites.findFirst({
+            where: eq(sites.triggerSecret, secretParam)
+        });
+        if (siteBySecret) targetSites = [siteBySecret];
+    } else {
+        targetSites = await db.query.sites.findMany({
+            where: eq(sites.autoIndex, true)
+        });
+    }
 
-    if (autoIndexSites.length === 0) {
-        return NextResponse.json({ message: 'No auto-index sites found', processed: 0 });
+    if (targetSites.length === 0) {
+        return NextResponse.json({ message: 'No targets found', processed: 0 });
     }
 
     const results = [];
     let totalUrlsSubmitted = 0;
 
     // 3. Process each site
-    for (const site of autoIndexSites) {
+    for (const site of targetSites) {
         if (!site.indexNowKey) {
             results.push({ site: site.domain, status: 'skipped', reason: 'No IndexNow key' });
             continue;
@@ -132,38 +123,53 @@ export async function GET(request: Request) {
         }
 
         const host = getIndexNowHost(site.domain);
-        
-        // Submit
         const keyLocation = getIndexNowKeyLocation(site);
-        const submissionResult = await submitToIndexNow(host, site.indexNowKey, keyLocation, urlsToSubmit);
+        
+        // Chunked Submission (IndexNow limit is 10k, but we use smaller chunks for reliability)
+        const urlChunks = chunkArray(urlsToSubmit, 500);
+        let siteSuccessCount = 0;
+        let lastError = null;
 
-        if (submissionResult.success) {
-            // Deduct credits from user
+        for (const chunk of urlChunks) {
+            const result = await submitToIndexNow(host, site.indexNowKey, keyLocation, chunk);
+            if (result.success) {
+                siteSuccessCount += chunk.length;
+            } else {
+                lastError = result.message || "Unknown error";
+            }
+        }
+
+        if (siteSuccessCount > 0) {
+            // Deduct credits and update lastSyncAt
             await db.update(users)
                 .set({
-                    credits: sql`${users.credits} - ${urlsToSubmit.length}`,
+                    credits: sql`${users.credits} - ${siteSuccessCount}`,
                     updatedAt: new Date()
                 })
                 .where(eq(users.id, dbUser.id));
 
-            // Log submission (Upsert to prevent unique constraint violations)
+            await db.update(sites)
+                .set({ lastSyncAt: new Date() })
+                .where(eq(sites.id, site.id));
+
+            // Log submission
             await db.insert(usageLogs)
                 .values({
                     userId: dbUser.id,
                     date: new Date().toISOString().split('T')[0],
-                    count: urlsToSubmit.length,
+                    count: siteSuccessCount,
                     type: 'submission'
                 })
                 .onConflictDoUpdate({
                     target: [usageLogs.userId, usageLogs.date, usageLogs.type],
                     set: {
-                        count: sql`${usageLogs.count} + ${urlsToSubmit.length}`,
+                        count: sql`${usageLogs.count} + ${siteSuccessCount}`,
                         updatedAt: new Date()
                     }
                 });
 
             // Log individual URLs
-            const submissionsValues = urlsToSubmit.map(url => ({
+            const submissionsValues = urlsToSubmit.slice(0, siteSuccessCount).map(url => ({
                 siteId: site.id,
                 url: url,
                 status: 200,
@@ -171,17 +177,17 @@ export async function GET(request: Request) {
             }));
             
             await db.insert(submissions).values(submissionsValues);
-            totalUrlsSubmitted += urlsToSubmit.length;
+            totalUrlsSubmitted += siteSuccessCount;
             
-            results.push({ site: site.domain, status: 'success', submitted: urlsToSubmit.length });
+            results.push({ site: site.domain, status: siteSuccessCount === urlsToSubmit.length ? 'success' : 'partial', submitted: siteSuccessCount });
         } else {
-            results.push({ site: site.domain, status: 'failed', reason: submissionResult.message });
+            results.push({ site: site.domain, status: 'failed', reason: lastError });
         }
     }
 
     return NextResponse.json({ 
         success: true, 
-        message: `Processed ${autoIndexSites.length} sites.`,
+        message: `Processed ${targetSites.length} sites.`,
         totalUrlsSubmitted,
         results
     });

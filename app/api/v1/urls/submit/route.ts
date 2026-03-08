@@ -4,7 +4,7 @@ import db from "@/lib/db";
 import { sites, submissions } from "@/lib/schema";
 import { eq, and } from "drizzle-orm";
 import { deductCredit } from "@/app/actions/dashboard";
-import { getIndexNowHost, getIndexNowKeyLocation } from "@/lib/url-utils";
+import { getIndexNowHost, getIndexNowKeyLocation, chunkArray, submitToIndexNow } from "@/lib/url-utils";
 
 export async function POST(request: NextRequest) {
     // Auth
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
         });
     }
 
-    // Submit via IndexNow using per-site key
+    // Submit via IndexNow using per-site key in chunks
     const INDEXNOW_KEY = site.indexNowKey;
     if (!INDEXNOW_KEY) {
         return NextResponse.json({ 
@@ -80,74 +80,58 @@ export async function POST(request: NextRequest) {
             submitted: 0, failed: urls.length, credits_used: 0, credits_remaining: user.credits
         }, { status: 400 });
     }
+
+    const host = getIndexNowHost(site.domain);
+    const keyLocation = getIndexNowKeyLocation(site);
+    const urlChunks = chunkArray(urls, 100); // Small chunks for API reliability
+    
+    let totalSubmitted = 0;
+    let totalFailed = 0;
+    let lastError = null;
     const results: { url: string; status: number }[] = [];
-    let submitted = 0;
-    let failed = 0;
 
-    try {
-        const host = getIndexNowHost(site.domain);
-        const keyLocation = getIndexNowKeyLocation(site);
-        
-        const indexNowPayload = {
-            host,
-            key: INDEXNOW_KEY,
-            keyLocation,
-            urlList: urls,
-        };
-
-        const response = await fetch("https://api.indexnow.org/indexnow", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(indexNowPayload),
-        });
-
-        const status = response.status;
-        
-        // IndexNow returns 200/202 for success
-        if (status >= 200 && status < 300) {
-            for (const url of urls) {
-                results.push({ url, status: 200 });
-                submitted++;
-            }
+    for (const chunk of urlChunks) {
+        const result = await submitToIndexNow(host, INDEXNOW_KEY, keyLocation, chunk);
+        if (result.success) {
+            totalSubmitted += chunk.length;
+            chunk.forEach(url => results.push({ url, status: 200 }));
         } else {
-            for (const url of urls) {
-                results.push({ url, status });
-                failed++;
-            }
+            totalFailed += chunk.length;
+            lastError = result.message;
+            chunk.forEach(url => results.push({ url, status: result.status }));
         }
+    }
 
-        // Record submissions in DB
-        const submissionRecords = urls.map(url => ({
+    // Record submissions in DB
+    if (results.length > 0) {
+        const submissionRecords = results.map(r => ({
             siteId: site_id,
-            url,
-            status: status >= 200 && status < 300 ? 200 : status,
+            url: r.url,
+            status: r.status,
+            submittedAt: new Date(),
         }));
-
         await db.insert(submissions).values(submissionRecords);
+    }
 
-        // Deduct credits
-        if (submitted > 0) {
-            await deductCredit(submitted);
-        }
+    // Deduct credits
+    if (totalSubmitted > 0) {
+        await deductCredit(totalSubmitted);
+    }
 
-    } catch (error) {
-        console.error("IndexNow API error:", error);
-        return NextResponse.json({
-            success: false,
-            error: "Failed to submit URLs to IndexNow",
-            submitted: 0,
-            failed: urls.length,
-            credits_used: 0,
-            credits_remaining: user.credits,
+    if (totalSubmitted === 0 && totalFailed > 0) {
+        return NextResponse.json({ 
+            error: "IndexNow API error", 
+            message: lastError,
+            submitted: 0, failed: totalFailed, credits_used: 0, credits_remaining: user.credits
         }, { status: 502 });
     }
 
     return NextResponse.json({
         success: true,
-        submitted,
-        failed,
-        credits_used: submitted,
-        credits_remaining: user.credits - submitted,
+        submitted: totalSubmitted,
+        failed: totalFailed,
+        credits_used: totalSubmitted,
+        credits_remaining: user.credits - totalSubmitted,
         results,
     });
 }

@@ -53,6 +53,7 @@ export const sites = pgTable('sites', {
   indexNowKey: text('index_now_key'),  // Per-site IndexNow API key
   indexNowKeyLocation: text('index_now_key_location'), // Custom URL to the key file
   indexNowKeyVerified: boolean('index_now_key_verified').default(false).notNull(), // Whether key file is verified on domain
+  triggerSecret: text('trigger_secret'), // Per-site secret for external automation
   lastSyncAt: timestamp('last_sync_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (t) => ({
